@@ -1,0 +1,16 @@
+@import url('./main-layout.css');
+@import url('./views/gallery-view.css');
+@import url('./views/generate-image-view.css');
+@import url('./views/user-management-view.css');    html {
+      --lumo-size-xl: 4rem;
+      --lumo-size-l: 3rem;
+      --lumo-size-m: 2.5rem;
+      --lumo-size-s: 2rem;
+      --lumo-size-xs: 1.75rem;
+      --lumo-space-xl: 2.5rem;
+      --lumo-space-l: 1.75rem;
+      --lumo-space-m: 1.125rem;
+      --lumo-space-s: 0.75rem;
+      --lumo-space-xs: 0.375rem;
+
+    }
