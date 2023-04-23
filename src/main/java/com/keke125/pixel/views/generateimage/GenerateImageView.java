@@ -3,7 +3,9 @@ package com.keke125.pixel.views.generateimage;
 import com.keke125.pixel.data.entity.SampleImage;
 import com.keke125.pixel.data.service.SampleImageService;
 import com.keke125.pixel.views.MainLayout;
+import com.keke125.pixel.views.Translator;
 import com.vaadin.flow.component.Component;
+import com.vaadin.flow.component.UI;
 import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.button.ButtonVariant;
 import com.vaadin.flow.component.checkbox.Checkbox;
@@ -20,6 +22,8 @@ import com.vaadin.flow.component.upload.UploadI18N;
 import com.vaadin.flow.component.upload.receivers.FileData;
 import com.vaadin.flow.component.upload.receivers.MultiFileBuffer;
 import com.vaadin.flow.data.binder.Binder;
+import com.vaadin.flow.i18n.LocaleChangeEvent;
+import com.vaadin.flow.i18n.LocaleChangeObserver;
 import com.vaadin.flow.router.PageTitle;
 import com.vaadin.flow.router.Route;
 import jakarta.annotation.security.RolesAllowed;
@@ -30,30 +34,35 @@ import java.util.Arrays;
 @Route(value = "generate-image", layout = MainLayout.class)
 @RolesAllowed("USER")
 @Uses(Icon.class)
-public class GenerateImageView extends Div {
+public class GenerateImageView extends Div implements LocaleChangeObserver {
 
-    // data input field
-    private Select<Integer> colorDepth = new Select<>();
+    // i18n provider
+    private static Translator translator = new Translator();
+    private String title;
     private Select<Integer> pixelSize = new Select<>();
     private Select<String> smooth = new Select<>();
     private Select<String> edgeCrispening = new Select<>();
     private Select<Integer> saturation = new Select<>();
     private Select<Integer> contrastRatio = new Select<>();
     private Checkbox isPublic = new Checkbox();
-
-    // button cancel and button save
-    private Button cancel = new Button("預設配置");
+    // data input field
+    private Select<Integer> colorNumber = new Select<>();
     private Button save = new Button("儲存");
 
     // binder with Class SampleImage
     private Binder<SampleImage> binder = new Binder<>(SampleImage.class);
-
+    // button cancel and button save
+    private Button cancel = new Button();
     // file buffer and upload
-    private  MultiFileBuffer multiFileBuffer = new MultiFileBuffer();
+    private MultiFileBuffer multiFileBuffer = new MultiFileBuffer();
     private Upload multiFileUpload = new Upload(multiFileBuffer);
+    // setup upload i18n
+    private UploadTCI18N uploadTCI18N;
+    private UploadENI18N uploadENI18N;
 
     public GenerateImageView(SampleImageService imageService) {
         addClassName("generate-image-view");
+        title = translator.getTranslation("Generate-Image", UI.getCurrent().getLocale());
 
         add(createTitle());
         add(createFormLayout());
@@ -75,7 +84,7 @@ public class GenerateImageView extends Div {
     private void clearForm() {
         binder.setBean(new SampleImage());
         // default image configure
-        colorDepth.setValue(4);
+        colorNumber.setValue(4);
         pixelSize.setValue(2);
         smooth.setValue("無");
         edgeCrispening.setValue("無");
@@ -91,33 +100,34 @@ public class GenerateImageView extends Div {
     private Component createFormLayout() {
         FormLayout formLayout = new FormLayout();
         // setup select item
-        colorDepth.setLabel("色深");
-        colorDepth.setItems(2,4,8,16);
-        colorDepth.setValue(4);
+        colorNumber.setLabel(translator.getTranslation("colorNumber", UI.getCurrent().getLocale(), colorNumber));
+        colorNumber.setItems(2, 4, 8, 16);
+        colorNumber.setValue(4);
         pixelSize.setLabel("像素大小");
-        pixelSize.setItems(1,2,3,4,5);
+        pixelSize.setItems(1, 2, 3, 4, 5);
         pixelSize.setValue(2);
         smooth.setLabel("平滑程度");
-        smooth.setItems("無","弱","中","強");
+        smooth.setItems("無", "弱", "中", "強");
         smooth.setValue("無");
         edgeCrispening.setLabel("邊緣銳化");
-        edgeCrispening.setItems("無","弱","強");
+        edgeCrispening.setItems("無", "弱", "強");
         edgeCrispening.setValue("無");
         saturation.setLabel("色度(飽和度)");
-        saturation.setItems(-250,-200,-150,-100,-50,0,50,100,150,200,250);
+        saturation.setItems(-250, -200, -150, -100, -50, 0, 50, 100, 150, 200, 250);
         saturation.setValue(0);
         contrastRatio.setLabel("對比度");
-        contrastRatio.setItems(-250,-200,-150,-100,-50,0,50,100,150,200,250);
+        contrastRatio.setItems(-250, -200, -150, -100, -50, 0, 50, 100, 150, 200, 250);
         contrastRatio.setValue(0);
         isPublic.setLabel("公開圖片");
         isPublic.setValue(false);
-        formLayout.add(colorDepth, pixelSize, smooth, edgeCrispening, saturation,contrastRatio,isPublic);
+        formLayout.add(colorNumber, pixelSize, smooth, edgeCrispening, saturation, contrastRatio, isPublic);
         return formLayout;
 
     }
 
     private Component createButtonLayout() {
         HorizontalLayout buttonLayout = new HorizontalLayout();
+        cancel.setText(translator.getTranslation("cancelButton", UI.getCurrent().getLocale(), cancel));
         buttonLayout.addClassName("button-layout");
         save.addThemeVariants(ButtonVariant.LUMO_PRIMARY);
         buttonLayout.add(save);
@@ -125,12 +135,17 @@ public class GenerateImageView extends Div {
         return buttonLayout;
     }
 
-    private Component createUploadLayout(){
+    private Component createUploadLayout() {
         HorizontalLayout uploadLayout = new HorizontalLayout();
         uploadLayout.addClassName("upload-layout");
         // setup upload i18n
-        UploadTCI18N uploadTCI18N = new UploadTCI18N();
-        multiFileUpload.setI18n(uploadTCI18N);
+        uploadTCI18N = new UploadTCI18N();
+        uploadENI18N = new UploadENI18N();
+        if (UI.getCurrent().getLocale().equals(translator.LOCALE_ZHT)) {
+            multiFileUpload.setI18n(uploadTCI18N);
+        } else {
+            multiFileUpload.setI18n(uploadENI18N);
+        }
         // only image file can be uploaded
         multiFileUpload.setAcceptedFileTypes("image/*");
         // max 3 files can be uploaded
@@ -142,7 +157,7 @@ public class GenerateImageView extends Div {
         multiFileUpload.setMaxFileSize(maxFileSizeInBytes);
         // upload hint message
         Paragraph hint = new Paragraph(
-                "單一檔案大小不能超過"+maxFileSizeInMegaBytes+"MB，每次最多上傳"+maxFiles+"張，只能上傳圖片檔");
+                "單一檔案大小不能超過" + maxFileSizeInMegaBytes + "MB，每次最多上傳" + maxFiles + "張，只能上傳圖片檔");
         add(hint);
         // upload drop label
         Span dropLabel = new Span("檔案將上傳至我們的伺服器，可參考我們的隱私權政策");
@@ -167,7 +182,18 @@ public class GenerateImageView extends Div {
             notification.addThemeVariants(NotificationVariant.LUMO_ERROR);
         });
         uploadLayout.add(multiFileUpload);
-        return  uploadLayout;
+        return uploadLayout;
+    }
+
+    @Override
+    public void localeChange(LocaleChangeEvent localeChangeEvent) {
+        colorNumber.setLabel(translator.getTranslation("colorNumber", UI.getCurrent().getLocale(), colorNumber));
+        cancel.setText(translator.getTranslation("cancelButton", UI.getCurrent().getLocale(), cancel));
+        if (localeChangeEvent.getLocale().equals(translator.LOCALE_ZHT)) {
+            multiFileUpload.setI18n(uploadTCI18N);
+        } else {
+            multiFileUpload.setI18n(uploadENI18N);
+        }
     }
 
     // upload i18n
@@ -197,6 +223,34 @@ public class GenerateImageView extends Div {
                     "PB", "EB", "ZB", "YB")));
         }
     }
+
+    public class UploadENI18N extends UploadI18N {
+        public UploadENI18N() {
+            setDropFiles(new DropFiles().setOne("Drop file here")
+                    .setMany("Drop files here"));
+            setAddFiles(new AddFiles().setOne("Upload File...")
+                    .setMany("Upload Files..."));
+            setError(new Error().setTooManyFiles("Too Many Files.")
+                    .setFileIsTooBig("File is Too Big.")
+                    .setIncorrectFileType("Incorrect File Type."));
+            setUploading(new Uploading()
+                    .setStatus(new Uploading.Status().setConnecting("Connecting...")
+                            .setStalled("Stalled")
+                            .setProcessing("Processing File...").setHeld("Queued"))
+                    .setRemainingTime(new Uploading.RemainingTime()
+                            .setPrefix("remaining time: ")
+                            .setUnknown("unknown remaining time"))
+                    .setError(new Uploading.Error()
+                            .setServerUnavailable(
+                                    "Upload failed, please try again later")
+                            .setUnexpectedServerError(
+                                    "Upload failed due to server error")
+                            .setForbidden("Upload forbidden")));
+            setUnits(new Units().setSize(Arrays.asList("B", "kB", "MB", "GB", "TB",
+                    "PB", "EB", "ZB", "YB")));
+        }
+    }
+
     // upload image title
     private Component createUploadTitle() {
         return new H3("上傳圖片");

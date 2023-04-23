@@ -8,9 +8,12 @@ import com.keke125.pixel.views.about.AboutView;
 import com.keke125.pixel.views.gallery.GalleryView;
 import com.keke125.pixel.views.generateimage.GenerateImageView;
 import com.keke125.pixel.views.usermanagement.UserManagementView;
+import com.vaadin.flow.component.AbstractField;
+import com.vaadin.flow.component.UI;
 import com.vaadin.flow.component.applayout.AppLayout;
 import com.vaadin.flow.component.applayout.DrawerToggle;
 import com.vaadin.flow.component.avatar.Avatar;
+import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.contextmenu.MenuItem;
 import com.vaadin.flow.component.html.Anchor;
 import com.vaadin.flow.component.html.Div;
@@ -19,52 +22,108 @@ import com.vaadin.flow.component.html.H1;
 import com.vaadin.flow.component.html.H2;
 import com.vaadin.flow.component.html.Header;
 import com.vaadin.flow.component.icon.Icon;
+import com.vaadin.flow.component.icon.VaadinIcon;
 import com.vaadin.flow.component.menubar.MenuBar;
+import com.vaadin.flow.component.menubar.MenuBarVariant;
+import com.vaadin.flow.component.orderedlayout.FlexComponent;
+import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
 import com.vaadin.flow.component.orderedlayout.Scroller;
+import com.vaadin.flow.component.select.Select;
+import com.vaadin.flow.dom.ThemeList;
+import com.vaadin.flow.i18n.I18NProvider;
+import com.vaadin.flow.i18n.LocaleChangeEvent;
+import com.vaadin.flow.i18n.LocaleChangeObserver;
+import com.vaadin.flow.router.HasDynamicTitle;
 import com.vaadin.flow.router.PageTitle;
 import com.vaadin.flow.server.StreamResource;
+import com.vaadin.flow.server.VaadinRequest;
 import com.vaadin.flow.server.auth.AccessAnnotationChecker;
+import com.vaadin.flow.theme.lumo.Lumo;
 import com.vaadin.flow.theme.lumo.LumoUtility;
+
 import java.io.ByteArrayInputStream;
+import java.util.Arrays;
+import java.util.Locale;
 import java.util.Optional;
+import java.util.Properties;
+
+import jakarta.servlet.http.Cookie;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.vaadin.lineawesome.LineAwesomeIcon;
 
 /**
  * The main view is a top-level placeholder for other views.
  */
-public class MainLayout extends AppLayout {
+public class MainLayout extends AppLayout implements LocaleChangeObserver {
 
     private H2 viewTitle;
 
     private AuthenticatedUser authenticatedUser;
     private AccessAnnotationChecker accessChecker;
 
-    public MainLayout(AuthenticatedUser authenticatedUser, AccessAnnotationChecker accessChecker) {
+    private static Translator translator = new Translator();
+    private final Select<Locale> selectLanguage = new Select<>();
+    // Navigation
+    private AppNavItem galleryViewNav;
+    private AppNavItem generateImageViewNav;
+    private AppNavItem aboutViewNav;
+    private AppNavItem userManagementViewNav;
+
+
+    public MainLayout(AuthenticatedUser authenticatedUser, AccessAnnotationChecker accessChecker, @Autowired Translator translator) {
         this.authenticatedUser = authenticatedUser;
         this.accessChecker = accessChecker;
 
+        // DRAWER Primary
         setPrimarySection(Section.DRAWER);
         addDrawerContent();
         addHeaderContent();
     }
 
     private void addHeaderContent() {
+        // Menu toggle in header
         DrawerToggle toggle = new DrawerToggle();
         toggle.getElement().setAttribute("aria-label", "Menu toggle");
-
+        // title
         viewTitle = new H2();
         viewTitle.addClassNames(LumoUtility.FontSize.LARGE, LumoUtility.Margin.NONE);
-
-        addToNavbar(true, toggle, viewTitle);
+        // select language
+        selectLanguage.setItems(translator.getProvidedLocales());
+        selectLanguage.setItemLabelGenerator(g -> translator.getTranslation(g.getLanguage(), UI.getCurrent().getLocale()));
+        // check is current language available
+        // if not available, using the first available language
+        if (translator.getProvidedLocales().contains(UI.getCurrent().getLocale())) {
+            selectLanguage.setValue(UI.getCurrent().getLocale());
+        } else {
+            selectLanguage.setValue(translator.getProvidedLocales().get(0));
+        }
+        selectLanguage.addValueChangeListener(e -> {
+            UI.getCurrent().setLocale(e.getValue());
+        });
+        // switch between light and dark theme
+        Button themeButton = new Button(new Icon(VaadinIcon.ADJUST), click -> {
+            ThemeList themeList = UI.getCurrent().getElement().getThemeList();
+            if (themeList.contains(Lumo.DARK)) {
+                themeList.remove(Lumo.DARK);
+            } else {
+                themeList.add(Lumo.DARK);
+            }
+        });
+        // set selectLanguage on right
+        selectLanguage.getStyle().set("margin-left", "auto");
+        selectLanguage.addClassNames(LumoUtility.Margin.MEDIUM);
+        // set themeButton next to viewTitle
+        themeButton.addClassNames(LumoUtility.Margin.MEDIUM);
+        addToNavbar(true, toggle, viewTitle, themeButton, selectLanguage);
     }
 
     private void addDrawerContent() {
-        H1 appName = new H1("Pixel-Art-Filter-Web");
+        // Drawer header
+        H1 appName = new H1("Pixel Art Filter Web");
         appName.addClassNames(LumoUtility.FontSize.LARGE, LumoUtility.Margin.NONE);
         Header header = new Header(appName);
-
+        // Scroller with Navigation
         Scroller scroller = new Scroller(createNavigation());
-
         addToDrawer(header, scroller, createFooter());
     }
 
@@ -72,22 +131,28 @@ public class MainLayout extends AppLayout {
         // AppNav is not yet an official component.
         // For documentation, visit https://github.com/vaadin/vcf-nav#readme
         AppNav nav = new AppNav();
-
+        galleryViewNav = new AppNavItem(translator.getTranslation
+                ("gallery", UI.getCurrent().getLocale()), GalleryView.class, LineAwesomeIcon.IMAGES.create());
+        generateImageViewNav = new AppNavItem(translator.getTranslation
+                ("generate-image", UI.getCurrent().getLocale()), GenerateImageView.class, LineAwesomeIcon.IMAGE.create());
+        aboutViewNav = new AppNavItem(translator.getTranslation
+                ("about", UI.getCurrent().getLocale()), AboutView.class, LineAwesomeIcon.FILE.create());
+        userManagementViewNav = new AppNavItem(translator.getTranslation
+                ("user-management", UI.getCurrent().getLocale()), UserManagementView.class, LineAwesomeIcon.USERS_SOLID.create());
         if (accessChecker.hasAccess(GalleryView.class)) {
-            nav.addItem(new AppNavItem("Gallery", GalleryView.class, LineAwesomeIcon.IMAGES.create()));
+            nav.addItem(galleryViewNav);
 
         }
         if (accessChecker.hasAccess(GenerateImageView.class)) {
-            nav.addItem(new AppNavItem("Generate Image", GenerateImageView.class, LineAwesomeIcon.IMAGE.create()));
+            nav.addItem(generateImageViewNav);
 
         }
         if (accessChecker.hasAccess(AboutView.class)) {
-            nav.addItem(new AppNavItem("About", AboutView.class, LineAwesomeIcon.FILE.create()));
+            nav.addItem(aboutViewNav);
 
         }
         if (accessChecker.hasAccess(UserManagementView.class)) {
-            nav.addItem(
-                    new AppNavItem("User Management", UserManagementView.class, LineAwesomeIcon.USERS_SOLID.create()));
+            nav.addItem(userManagementViewNav);
 
         }
 
@@ -120,13 +185,13 @@ public class MainLayout extends AppLayout {
             div.getElement().getStyle().set("align-items", "center");
             div.getElement().getStyle().set("gap", "var(--lumo-space-s)");
             userName.add(div);
-            userName.getSubMenu().addItem("Sign out", e -> {
+            userName.getSubMenu().addItem("登出", e -> {
                 authenticatedUser.logout();
             });
 
             layout.add(userMenu);
         } else {
-            Anchor loginLink = new Anchor("login", "Sign in");
+            Anchor loginLink = new Anchor("login", "登入");
             layout.add(loginLink);
         }
 
@@ -141,6 +206,17 @@ public class MainLayout extends AppLayout {
 
     private String getCurrentPageTitle() {
         PageTitle title = getContent().getClass().getAnnotation(PageTitle.class);
-        return title == null ? "" : title.value();
+        return title == null ? "" : translator.getTranslation(title.value().replace(" ", "-"), UI.getCurrent().getLocale());
     }
+
+    @Override
+    public void localeChange(LocaleChangeEvent localeChangeEvent) {
+        viewTitle.setText(getCurrentPageTitle());
+        selectLanguage.setItemLabelGenerator(g -> translator.getTranslation(g.getLanguage(), UI.getCurrent().getLocale()));
+        galleryViewNav.setLabel(translator.getTranslation("gallery", UI.getCurrent().getLocale()));
+        generateImageViewNav.setLabel(translator.getTranslation("generate-image", UI.getCurrent().getLocale()));
+        aboutViewNav.setLabel(translator.getTranslation("about", UI.getCurrent().getLocale()));
+        userManagementViewNav.setLabel(translator.getTranslation("user-management", UI.getCurrent().getLocale()));
+    }
+
 }
