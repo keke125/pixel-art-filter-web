@@ -41,4 +41,8 @@ public class SampleImageService {
         return (int) repository.count();
     }
 
+    public void save(SampleImage entity) {
+        repository.save(entity);
+    }
+
 }

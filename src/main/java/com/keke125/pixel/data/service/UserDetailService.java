@@ -1,10 +1,14 @@
 package com.keke125.pixel.data.service;
 
 import com.keke125.pixel.data.entity.UserDetail;
+
 import java.util.Optional;
+
+import com.vaadin.flow.server.ServiceException;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.domain.Specification;
+import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Service;
 
 @Service

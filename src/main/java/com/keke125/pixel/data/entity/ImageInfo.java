@@ -9,13 +9,14 @@ import lombok.NoArgsConstructor;
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
-public class SampleImage extends AbstractEntity {
+public class ImageInfo extends AbstractEntity {
 
-    private Integer colorDepth;
+    private Integer colorNumber;
     private Integer pixelSize;
     private String smooth;
     private String edgeCrispening;
     private Integer saturation;
-    private Integer contrastRatioBox;
+    private Integer contrastRatio;
     private boolean isPublic;
+    private ImageFile imageFile;
 }

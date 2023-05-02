@@ -61,7 +61,7 @@ public class MainLayout extends AppLayout implements LocaleChangeObserver {
     private AuthenticatedUser authenticatedUser;
     private AccessAnnotationChecker accessChecker;
 
-    private static Translator translator = new Translator();
+    private static final Translator translator = new Translator();
     private final Select<Locale> selectLanguage = new Select<>();
     // Navigation
     private AppNavItem galleryViewNav;
@@ -70,7 +70,7 @@ public class MainLayout extends AppLayout implements LocaleChangeObserver {
     private AppNavItem userManagementViewNav;
 
 
-    public MainLayout(AuthenticatedUser authenticatedUser, AccessAnnotationChecker accessChecker, @Autowired Translator translator) {
+    public MainLayout(AuthenticatedUser authenticatedUser, AccessAnnotationChecker accessChecker) {
         this.authenticatedUser = authenticatedUser;
         this.accessChecker = accessChecker;
 
@@ -97,9 +97,7 @@ public class MainLayout extends AppLayout implements LocaleChangeObserver {
         } else {
             selectLanguage.setValue(translator.getProvidedLocales().get(0));
         }
-        selectLanguage.addValueChangeListener(e -> {
-            UI.getCurrent().setLocale(e.getValue());
-        });
+        selectLanguage.addValueChangeListener(e -> UI.getCurrent().setLocale(e.getValue()));
         // switch between light and dark theme
         Button themeButton = new Button(new Icon(VaadinIcon.ADJUST), click -> {
             ThemeList themeList = UI.getCurrent().getElement().getThemeList();
@@ -166,7 +164,7 @@ public class MainLayout extends AppLayout implements LocaleChangeObserver {
         if (maybeUser.isPresent()) {
             User user = maybeUser.get();
 
-            Avatar avatar = new Avatar(user.getName());
+            Avatar avatar = new Avatar(user.getUsername());
             StreamResource resource = new StreamResource("profile-pic",
                     () -> new ByteArrayInputStream(user.getProfilePicture()));
             avatar.setImageResource(resource);

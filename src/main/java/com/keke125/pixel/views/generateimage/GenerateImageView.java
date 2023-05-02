@@ -1,5 +1,7 @@
 package com.keke125.pixel.views.generateimage;
 
+import com.keke125.pixel.data.entity.ImageFile;
+import com.keke125.pixel.data.entity.ImageInfo;
 import com.keke125.pixel.data.entity.SampleImage;
 import com.keke125.pixel.data.service.SampleImageService;
 import com.keke125.pixel.views.MainLayout;
@@ -27,7 +29,16 @@ import com.vaadin.flow.i18n.LocaleChangeObserver;
 import com.vaadin.flow.router.PageTitle;
 import com.vaadin.flow.router.Route;
 import jakarta.annotation.security.RolesAllowed;
+import org.apache.commons.codec.digest.DigestUtils;
+import org.apache.commons.io.FilenameUtils;
+import org.apache.tika.Tika;
 
+import java.io.*;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.nio.file.StandardCopyOption;
+import java.time.Instant;
 import java.util.Arrays;
 
 @PageTitle("Generate Image")
@@ -37,14 +48,15 @@ import java.util.Arrays;
 public class GenerateImageView extends Div implements LocaleChangeObserver {
 
     // i18n provider
-    private static Translator translator = new Translator();
-    private String title;
+    private static final Translator translator = new Translator();
+    // private String title;
     private Select<Integer> pixelSize = new Select<>();
     private Select<String> smooth = new Select<>();
     private Select<String> edgeCrispening = new Select<>();
     private Select<Integer> saturation = new Select<>();
     private Select<Integer> contrastRatio = new Select<>();
     private Checkbox isPublic = new Checkbox();
+    private ImageFile newImageFile;
     // data input field
     private Select<Integer> colorNumber = new Select<>();
     private Button save = new Button("儲存");
@@ -59,10 +71,11 @@ public class GenerateImageView extends Div implements LocaleChangeObserver {
     // setup upload i18n
     private UploadTCI18N uploadTCI18N;
     private UploadENI18N uploadENI18N;
+    // inject sample image service
+    private SampleImageService sampleImageService;
 
-    public GenerateImageView(SampleImageService imageService) {
+    public GenerateImageView(SampleImageService sampleImageService) {
         addClassName("generate-image-view");
-        title = translator.getTranslation("Generate-Image", UI.getCurrent().getLocale());
 
         add(createTitle());
         add(createFormLayout());
@@ -75,8 +88,9 @@ public class GenerateImageView extends Div implements LocaleChangeObserver {
 
         cancel.addClickListener(e -> clearForm());
         save.addClickListener(e -> {
-            imageService.update(binder.getBean());
+            sampleImageService.update(binder.getBean());
             Notification.show("已保存圖片生成參數資訊");
+            ImageInfo newImageInfo = new ImageInfo(colorNumber.getValue(), pixelSize.getValue(), smooth.getValue(), edgeCrispening.getValue(), saturation.getValue(), contrastRatio.getValue(), isPublic.getValue(), newImageFile);
             clearForm();
         });
     }
@@ -141,7 +155,7 @@ public class GenerateImageView extends Div implements LocaleChangeObserver {
         // setup upload i18n
         uploadTCI18N = new UploadTCI18N();
         uploadENI18N = new UploadENI18N();
-        if (UI.getCurrent().getLocale().equals(translator.LOCALE_ZHT)) {
+        if (UI.getCurrent().getLocale().equals(Translator.LOCALE_ZHT)) {
             multiFileUpload.setI18n(uploadTCI18N);
         } else {
             multiFileUpload.setI18n(uploadENI18N);
@@ -169,14 +183,86 @@ public class GenerateImageView extends Div implements LocaleChangeObserver {
             // Get information for that specific file
             FileData savedFileData = multiFileBuffer
                     .getFileData(uploadFileName);
+            // check the real file type
+            Tika tika = new Tika();
+            String mimeType;
+            try {
+                mimeType = tika.detect(savedFileData.getFile());
+            } catch (IOException e) {
+                throw new RuntimeException(e);
+            }
             String absolutePath = savedFileData.getFile().getAbsolutePath();
-
-            System.out.printf("File saved to: %s%n", absolutePath);
+            if (!mimeType.equals("null")) {
+                if (mimeType.startsWith("image")) {
+                    System.out.printf("Tmp File saved to: %s.%n", absolutePath);
+                } else {
+                    String errorMessage = String.format("因為上傳檔案 %s 非圖片，將忽略該檔案", uploadFileName);
+                    Notification notification = Notification.show(errorMessage, 5000,
+                            Notification.Position.BOTTOM_CENTER);
+                    notification.addThemeVariants(NotificationVariant.LUMO_ERROR);
+                    if (savedFileData.getFile().delete()) {
+                        System.out.printf("Tmp File has been deleted from %s.%n", absolutePath);
+                    } else {
+                        System.out.printf("Tmp File has not been deleted from %s.%n", absolutePath);
+                    }
+                }
+            } else {
+                String errorMessage = String.format("因為無法辨識上傳檔案 %s 類型，將忽略該檔案", uploadFileName);
+                Notification notification = Notification.show(errorMessage, 5000,
+                        Notification.Position.BOTTOM_CENTER);
+                notification.addThemeVariants(NotificationVariant.LUMO_ERROR);
+                if (savedFileData.getFile().delete()) {
+                    System.out.printf("Tmp File has been deleted from %s.%n", absolutePath);
+                } else {
+                    System.out.printf("Tmp File has not been deleted from %s.%n", absolutePath);
+                }
+            }
+            // time stamp for distinguishing different files
+            Instant instantNow = Instant.now();
+            // get current directory
+            Path workingDirectoryPath = Paths.get("");
+            // image directory = workingDirectory + image
+            // ex C:\path\to\your\app\image
+            File imageDirectoryFile = new File(workingDirectoryPath.toAbsolutePath() + File.separator + "image");
+            String newFileName = instantNow + "-" + uploadFileName;
+            // check if image folder exists
+            if (!imageDirectoryFile.exists()) {
+                if (imageDirectoryFile.mkdir()) {
+                    System.out.printf("Folder %s has been created.%n", imageDirectoryFile.getAbsolutePath());
+                } else {
+                    System.out.printf("Failed to create Folder %s.%n", imageDirectoryFile.getAbsolutePath());
+                    return;
+                }
+            }
+            // check image folder privilege
+            if (!(imageDirectoryFile.canRead() && imageDirectoryFile.canWrite())) {
+                System.out.printf("Don't have privilege to write and read folder %s%n", imageDirectoryFile.getAbsolutePath());
+                return;
+            }
+            // if real file type is image
+            // copy image from tmp folder to specific folder and rename image name
+            if (savedFileData.getFile().exists() && savedFileData.getFile().canRead()) {
+                String newFileNameHashed = DigestUtils.sha256Hex(newFileName);
+                String newFileFullName = newFileNameHashed + "." + FilenameUtils.getExtension(uploadFileName);
+                try {
+                    Files.copy(savedFileData.getFile().toPath(), imageDirectoryFile.toPath().resolve(newFileFullName), StandardCopyOption.REPLACE_EXISTING);
+                    newImageFile = new ImageFile(imageDirectoryFile.toPath().resolve(newFileFullName));
+                } catch (IOException e) {
+                    throw new RuntimeException(e);
+                }
+                System.out.printf("Saved New file %s from %s.%n", imageDirectoryFile.toPath().resolve(newFileFullName).toAbsolutePath(), savedFileData.getFile().toPath().toAbsolutePath());
+                if (savedFileData.getFile().delete()) {
+                    System.out.printf("Removed tmp file from %s.%n", absolutePath);
+                } else {
+                    System.out.printf("Failed to remove tmp file from %s.%n", absolutePath);
+                }
+            } else {
+                System.out.printf("Failed to get upload data in tmp folder%n");
+            }
         });
         // upload non image file
         multiFileUpload.addFileRejectedListener(event -> {
             String errorMessage = event.getErrorMessage();
-
             Notification notification = Notification.show(errorMessage, 5000,
                     Notification.Position.BOTTOM_CENTER);
             notification.addThemeVariants(NotificationVariant.LUMO_ERROR);
@@ -189,15 +275,20 @@ public class GenerateImageView extends Div implements LocaleChangeObserver {
     public void localeChange(LocaleChangeEvent localeChangeEvent) {
         colorNumber.setLabel(translator.getTranslation("colorNumber", UI.getCurrent().getLocale(), colorNumber));
         cancel.setText(translator.getTranslation("cancelButton", UI.getCurrent().getLocale(), cancel));
-        if (localeChangeEvent.getLocale().equals(translator.LOCALE_ZHT)) {
+        if (localeChangeEvent.getLocale().equals(Translator.LOCALE_ZHT)) {
             multiFileUpload.setI18n(uploadTCI18N);
         } else {
             multiFileUpload.setI18n(uploadENI18N);
         }
     }
 
+    // add image to queue
+    private void addImageToQueue(SampleImage entity) {
+        sampleImageService.save(entity);
+    }
+
     // upload i18n
-    public class UploadTCI18N extends UploadI18N {
+    public static class UploadTCI18N extends UploadI18N {
         public UploadTCI18N() {
             setDropFiles(new DropFiles().setOne("將檔案拖曳至此")
                     .setMany("將多個檔案拖曳至此"));
@@ -224,7 +315,12 @@ public class GenerateImageView extends Div implements LocaleChangeObserver {
         }
     }
 
-    public class UploadENI18N extends UploadI18N {
+    // upload image title
+    private Component createUploadTitle() {
+        return new H3("上傳圖片");
+    }
+
+    public static class UploadENI18N extends UploadI18N {
         public UploadENI18N() {
             setDropFiles(new DropFiles().setOne("Drop file here")
                     .setMany("Drop files here"));
@@ -249,10 +345,5 @@ public class GenerateImageView extends Div implements LocaleChangeObserver {
             setUnits(new Units().setSize(Arrays.asList("B", "kB", "MB", "GB", "TB",
                     "PB", "EB", "ZB", "YB")));
         }
-    }
-
-    // upload image title
-    private Component createUploadTitle() {
-        return new H3("上傳圖片");
     }
 }
