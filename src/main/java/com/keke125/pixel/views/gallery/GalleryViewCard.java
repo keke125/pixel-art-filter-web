@@ -3,7 +3,6 @@ package com.keke125.pixel.views.gallery;
 import com.vaadin.flow.component.html.Div;
 import com.vaadin.flow.component.html.Image;
 import com.vaadin.flow.component.html.ListItem;
-import com.vaadin.flow.component.html.Paragraph;
 import com.vaadin.flow.component.html.Span;
 import com.vaadin.flow.theme.lumo.LumoUtility.AlignItems;
 import com.vaadin.flow.theme.lumo.LumoUtility.Background;
@@ -16,12 +15,11 @@ import com.vaadin.flow.theme.lumo.LumoUtility.JustifyContent;
 import com.vaadin.flow.theme.lumo.LumoUtility.Margin;
 import com.vaadin.flow.theme.lumo.LumoUtility.Overflow;
 import com.vaadin.flow.theme.lumo.LumoUtility.Padding;
-import com.vaadin.flow.theme.lumo.LumoUtility.TextColor;
 import com.vaadin.flow.theme.lumo.LumoUtility.Width;
 
 public class GalleryViewCard extends ListItem {
 
-    public GalleryViewCard(String text, String url) {
+    public GalleryViewCard(String path, String text) {
         addClassNames(Background.CONTRAST_5, Display.FLEX, FlexDirection.COLUMN, AlignItems.START, Padding.MEDIUM,
                 BorderRadius.LARGE);
 
@@ -30,30 +28,28 @@ public class GalleryViewCard extends ListItem {
                 Margin.Bottom.MEDIUM, Overflow.HIDDEN, BorderRadius.MEDIUM, Width.FULL);
         div.setHeight("160px");
 
-        Image image = new Image();
+        Image image = new Image(path, text);
         image.setWidth("100%");
-        image.setSrc(url);
-        image.setAlt(text);
 
         div.add(image);
 
         Span header = new Span();
         header.addClassNames(FontSize.XLARGE, FontWeight.SEMIBOLD);
-        header.setText("Title");
+        header.setText(text);
 
-        Span subtitle = new Span();
-        subtitle.addClassNames(FontSize.SMALL, TextColor.SECONDARY);
-        subtitle.setText("Card subtitle");
+        //Span subtitle = new Span();
+        //subtitle.addClassNames(FontSize.SMALL, TextColor.SECONDARY);
+        //subtitle.setText("Card subtitle");
 
-        Paragraph description = new Paragraph(
-                "Lorem ipsum dolor sit amet, consectetur adipisicing elit, sed do eiusmod tempor incididunt ut.");
-        description.addClassName(Margin.Vertical.MEDIUM);
+        //Paragraph description = new Paragraph(
+        //"Lorem ipsum dolor sit amet, consectetur adipisicing elit, sed do eiusmod tempor incididunt ut.");
+        //description.addClassName(Margin.Vertical.MEDIUM);
 
         Span badge = new Span();
         badge.getElement().setAttribute("theme", "badge");
         badge.setText("Label");
 
-        add(div, header, subtitle, description, badge);
-
+        //add(div, header, subtitle, description, badge);
+        add(div, header, badge);
     }
 }

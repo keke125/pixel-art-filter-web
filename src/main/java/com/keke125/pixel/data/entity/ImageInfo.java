@@ -5,18 +5,23 @@ import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+import java.io.File;
+
 @Entity
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
 public class ImageInfo extends AbstractEntity {
-
+    private String filterType;
     private Integer colorNumber;
     private Integer pixelSize;
-    private String smooth;
-    private String edgeCrispening;
+    private Integer smooth;
+    private Integer edgeCrispening;
     private Integer saturation;
     private Integer contrastRatio;
     private boolean isPublic;
-    private ImageFile imageFile;
+    private File imageOriginalFile;
+    private File imageNewFile;
+    private String imageOriginalName;
+    private String ownerName;
 }

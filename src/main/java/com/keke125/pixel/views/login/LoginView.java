@@ -1,7 +1,6 @@
 package com.keke125.pixel.views.login;
 
 import com.keke125.pixel.security.AuthenticatedUser;
-import com.keke125.pixel.views.MainLayout;
 import com.keke125.pixel.views.Translator;
 import com.vaadin.flow.component.login.LoginI18n;
 import com.vaadin.flow.component.login.LoginOverlay;
@@ -12,8 +11,6 @@ import com.vaadin.flow.router.Route;
 import com.vaadin.flow.router.internal.RouteUtil;
 import com.vaadin.flow.server.VaadinService;
 import com.vaadin.flow.server.auth.AnonymousAllowed;
-import com.vaadin.flow.theme.Theme;
-import com.vaadin.flow.theme.lumo.Lumo;
 import com.vaadin.flow.component.UI;
 
 @AnonymousAllowed

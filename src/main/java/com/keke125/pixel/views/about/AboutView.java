@@ -11,15 +11,13 @@ import com.vaadin.flow.router.*;
 import com.vaadin.flow.server.auth.AnonymousAllowed;
 import com.vaadin.flow.theme.lumo.LumoUtility.Margin;
 
-import java.util.Locale;
-
 @PageTitle("About")
 @Route(value = "about", layout = MainLayout.class)
 @AnonymousAllowed
 public class AboutView extends VerticalLayout {
 
     private static Translator i18nProvider = new Translator();
-    private String title = "";
+    private String title;
 
     public AboutView() {
         title = i18nProvider.getTranslation("About", UI.getCurrent().getLocale());

@@ -1,5 +1,6 @@
 package com.keke125.pixel.core;
 
+import org.apache.commons.io.FilenameUtils;
 import org.opencv.core.CvType;
 import org.opencv.core.Mat;
 
@@ -22,14 +23,14 @@ public class Filters {
         return img;
     }
 
-    public static void saveImg(BufferedImage image, String fileName) {
+    public static void saveImg(BufferedImage image, File outputFile) {
         try {
-            File outputFile = new File(fileName);
-            ImageIO.write(image, "png", outputFile);
-        } catch (IOException e) {
-            e.printStackTrace();
+            ImageIO.write(image, FilenameUtils.getExtension(outputFile.getName()), outputFile);
+        } catch (IOException | IllegalArgumentException e) {
+            throw new RuntimeException(e);
         }
     }
+
 
     public double[] get(Mat mat, int row, int col) {
         if (row < 0 || row >= mat.rows() || col < 0 || col >= mat.cols()) return null;

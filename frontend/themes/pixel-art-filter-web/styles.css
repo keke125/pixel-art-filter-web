@@ -1,6 +1,6 @@
 @import url('./main-layout.css');
 @import url('./views/gallery-view.css');
-@import url('./views/generate-image-view.css');
+@import url('./views/pixel-transform-view.css');
 @import url('./views/user-management-view.css');    html {
       --lumo-size-xl: 4rem;
       --lumo-size-l: 3rem;

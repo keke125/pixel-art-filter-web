@@ -1,7 +1,7 @@
 package com.keke125.pixel.views.usermanagement;
 
-import com.keke125.pixel.data.entity.UserDetail;
-import com.keke125.pixel.data.service.UserDetailService;
+import com.keke125.pixel.data.entity.User;
+import com.keke125.pixel.data.service.UserService;
 import com.keke125.pixel.views.MainLayout;
 import com.vaadin.flow.component.UI;
 import com.vaadin.flow.component.button.Button;
@@ -21,7 +21,7 @@ import com.vaadin.flow.component.splitlayout.SplitLayout;
 import com.vaadin.flow.component.textfield.TextField;
 import com.vaadin.flow.data.binder.BeanValidationBinder;
 import com.vaadin.flow.data.binder.ValidationException;
-import com.vaadin.flow.data.converter.StringToIntegerConverter;
+import com.vaadin.flow.data.converter.StringToDoubleConverter;
 import com.vaadin.flow.data.renderer.LitRenderer;
 import com.vaadin.flow.router.BeforeEnterEvent;
 import com.vaadin.flow.router.BeforeEnterObserver;
@@ -34,16 +34,16 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.orm.ObjectOptimisticLockingFailureException;
 
 @PageTitle("User Management")
-@Route(value = "user-management/:userDetailID?/:action?(edit)", layout = MainLayout.class)
+@Route(value = "user-management/:userID?/:action?(edit)", layout = MainLayout.class)
 @RolesAllowed("ADMIN")
 @Uses(Icon.class)
 @Uses(Icon.class)
 public class UserManagementView extends Div implements BeforeEnterObserver {
 
-    private final String USERDETAIL_ID = "userDetailID";
-    private final String USERDETAIL_EDIT_ROUTE_TEMPLATE = "user-management/%s/edit";
+    private final String USER_ID = "userID";
+    private final String USER_EDIT_ROUTE_TEMPLATE = "user-management/%s/edit";
 
-    private final Grid<UserDetail> grid = new Grid<>(UserDetail.class, false);
+    private final Grid<User> grid = new Grid<>(User.class, false);
 
     private TextField name;
     private TextField email;
@@ -54,14 +54,12 @@ public class UserManagementView extends Div implements BeforeEnterObserver {
     private final Button cancel = new Button("Cancel");
     private final Button save = new Button("Save");
 
-    private final BeanValidationBinder<UserDetail> binder;
+    private final BeanValidationBinder<User> binder;
+    private final UserService userService;
+    private User user;
 
-    private UserDetail userDetail;
-
-    private final UserDetailService userDetailService;
-
-    public UserManagementView(UserDetailService userDetailService) {
-        this.userDetailService = userDetailService;
+    public UserManagementView(UserService userService) {
+        this.userService = userService;
         addClassNames("user-management-view");
 
         // Create UI
@@ -75,8 +73,8 @@ public class UserManagementView extends Div implements BeforeEnterObserver {
         // Configure Grid
         grid.addColumn("name").setAutoWidth(true);
         grid.addColumn("email").setAutoWidth(true);
-        LitRenderer<UserDetail> enabledRenderer = LitRenderer.<UserDetail>of(
-                "<vaadin-icon icon='vaadin:${item.icon}' style='width: var(--lumo-icon-size-s); height: var(--lumo-icon-size-s); color: ${item.color};'></vaadin-icon>")
+        LitRenderer<User> enabledRenderer = LitRenderer.<User>of(
+                        "<vaadin-icon icon='vaadin:${item.icon}' style='width: var(--lumo-icon-size-s); height: var(--lumo-icon-size-s); color: ${item.color};'></vaadin-icon>")
                 .withProperty("icon", enabled -> enabled.isEnabled() ? "check" : "minus").withProperty("color",
                         enabled -> enabled.isEnabled()
                                 ? "var(--lumo-primary-text-color)"
@@ -84,8 +82,8 @@ public class UserManagementView extends Div implements BeforeEnterObserver {
 
         grid.addColumn(enabledRenderer).setHeader("Enabled").setAutoWidth(true);
 
-        LitRenderer<UserDetail> adminRenderer = LitRenderer.<UserDetail>of(
-                "<vaadin-icon icon='vaadin:${item.icon}' style='width: var(--lumo-icon-size-s); height: var(--lumo-icon-size-s); color: ${item.color};'></vaadin-icon>")
+        LitRenderer<User> adminRenderer = LitRenderer.<User>of(
+                        "<vaadin-icon icon='vaadin:${item.icon}' style='width: var(--lumo-icon-size-s); height: var(--lumo-icon-size-s); color: ${item.color};'></vaadin-icon>")
                 .withProperty("icon", admin -> admin.isAdmin() ? "check" : "minus").withProperty("color",
                         admin -> admin.isAdmin()
                                 ? "var(--lumo-primary-text-color)"
@@ -94,15 +92,15 @@ public class UserManagementView extends Div implements BeforeEnterObserver {
         grid.addColumn(adminRenderer).setHeader("Admin").setAutoWidth(true);
 
         grid.addColumn("imageSize").setAutoWidth(true);
-        grid.setItems(query -> userDetailService.list(
-                PageRequest.of(query.getPage(), query.getPageSize(), VaadinSpringDataHelpers.toSpringDataSort(query)))
+        grid.setItems(query -> userService.list(
+                        PageRequest.of(query.getPage(), query.getPageSize(), VaadinSpringDataHelpers.toSpringDataSort(query)))
                 .stream());
         grid.addThemeVariants(GridVariant.LUMO_NO_BORDER);
 
         // when a row is selected or deselected, populate form
         grid.asSingleSelect().addValueChangeListener(event -> {
             if (event.getValue() != null) {
-                UI.getCurrent().navigate(String.format(USERDETAIL_EDIT_ROUTE_TEMPLATE, event.getValue().getId()));
+                UI.getCurrent().navigate(String.format(USER_EDIT_ROUTE_TEMPLATE, event.getValue().getId()));
             } else {
                 clearForm();
                 UI.getCurrent().navigate(UserManagementView.class);
@@ -110,12 +108,10 @@ public class UserManagementView extends Div implements BeforeEnterObserver {
         });
 
         // Configure Form
-        binder = new BeanValidationBinder<>(UserDetail.class);
+        binder = new BeanValidationBinder<>(User.class);
 
         // Bind fields. This is where you'd define e.g. validation rules
-        binder.forField(imageSize).withConverter(new StringToIntegerConverter("Only numbers are allowed"))
-                .bind("imageSize");
-
+        binder.forField(imageSize).withConverter(new StringToDoubleConverter("Only floats are allowed")).bind("imageSize");
         binder.bindInstanceFields(this);
 
         cancel.addClickListener(e -> {
@@ -125,11 +121,11 @@ public class UserManagementView extends Div implements BeforeEnterObserver {
 
         save.addClickListener(e -> {
             try {
-                if (this.userDetail == null) {
-                    this.userDetail = new UserDetail();
+                if (this.user == null) {
+                    this.user = new User();
                 }
-                binder.writeBean(this.userDetail);
-                userDetailService.update(this.userDetail);
+                binder.writeBean(this.user);
+                userService.update(this.user);
                 clearForm();
                 refreshGrid();
                 Notification.show("Data updated");
@@ -147,13 +143,13 @@ public class UserManagementView extends Div implements BeforeEnterObserver {
 
     @Override
     public void beforeEnter(BeforeEnterEvent event) {
-        Optional<Long> userDetailId = event.getRouteParameters().get(USERDETAIL_ID).map(Long::parseLong);
-        if (userDetailId.isPresent()) {
-            Optional<UserDetail> userDetailFromBackend = userDetailService.get(userDetailId.get());
-            if (userDetailFromBackend.isPresent()) {
-                populateForm(userDetailFromBackend.get());
+        Optional<Long> userId = event.getRouteParameters().get(USER_ID).map(Long::parseLong);
+        if (userId.isPresent()) {
+            Optional<User> userFromBackend = userService.get(userId.get());
+            if (userFromBackend.isPresent()) {
+                populateForm(userFromBackend.get());
             } else {
-                Notification.show(String.format("The requested userDetail was not found, ID = %s", userDetailId.get()),
+                Notification.show(String.format("The requested userDetail was not found, ID = %s", userId.get()),
                         3000, Notification.Position.BOTTOM_START);
                 // when a row is selected but the data is no longer available,
                 // refresh grid
@@ -181,7 +177,6 @@ public class UserManagementView extends Div implements BeforeEnterObserver {
 
         editorDiv.add(formLayout);
         createButtonLayout(editorLayoutDiv);
-
         splitLayout.addToSecondary(editorLayoutDiv);
     }
 
@@ -210,9 +205,9 @@ public class UserManagementView extends Div implements BeforeEnterObserver {
         populateForm(null);
     }
 
-    private void populateForm(UserDetail value) {
-        this.userDetail = value;
-        binder.readBean(this.userDetail);
+    private void populateForm(User value) {
+        this.user = value;
+        binder.readBean(this.user);
 
     }
 }

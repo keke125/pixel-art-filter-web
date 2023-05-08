@@ -1,9 +1,11 @@
 package com.keke125.pixel.views.generateimage;
 
-import com.keke125.pixel.data.entity.ImageFile;
 import com.keke125.pixel.data.entity.ImageInfo;
-import com.keke125.pixel.data.entity.SampleImage;
-import com.keke125.pixel.data.service.SampleImageService;
+import com.keke125.pixel.data.entity.User;
+import com.keke125.pixel.data.service.ImageInfoService;
+import com.keke125.pixel.data.service.ImageService;
+import com.keke125.pixel.data.service.UserService;
+import com.keke125.pixel.security.AuthenticatedUser;
 import com.keke125.pixel.views.MainLayout;
 import com.keke125.pixel.views.Translator;
 import com.vaadin.flow.component.Component;
@@ -23,7 +25,10 @@ import com.vaadin.flow.component.upload.Upload;
 import com.vaadin.flow.component.upload.UploadI18N;
 import com.vaadin.flow.component.upload.receivers.FileData;
 import com.vaadin.flow.component.upload.receivers.MultiFileBuffer;
+import com.vaadin.flow.data.binder.BeanValidationBinder;
 import com.vaadin.flow.data.binder.Binder;
+import com.vaadin.flow.data.binder.ValidationException;
+import com.vaadin.flow.dom.DomEventListener;
 import com.vaadin.flow.i18n.LocaleChangeEvent;
 import com.vaadin.flow.i18n.LocaleChangeObserver;
 import com.vaadin.flow.router.PageTitle;
@@ -32,6 +37,7 @@ import jakarta.annotation.security.RolesAllowed;
 import org.apache.commons.codec.digest.DigestUtils;
 import org.apache.commons.io.FilenameUtils;
 import org.apache.tika.Tika;
+import org.opencv.core.Core;
 
 import java.io.*;
 import java.nio.file.Files;
@@ -40,29 +46,31 @@ import java.nio.file.Paths;
 import java.nio.file.StandardCopyOption;
 import java.time.Instant;
 import java.util.Arrays;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.Optional;
 
-@PageTitle("Generate Image")
-@Route(value = "generate-image", layout = MainLayout.class)
+@PageTitle("Pixel Transform")
+@Route(value = "pixel-transform", layout = MainLayout.class)
 @RolesAllowed("USER")
 @Uses(Icon.class)
-public class GenerateImageView extends Div implements LocaleChangeObserver {
+public class PixelTransformView extends Div implements LocaleChangeObserver {
 
     // i18n provider
     private static final Translator translator = new Translator();
-    // private String title;
+    private final BeanValidationBinder<User> binderUser;
     private Select<Integer> pixelSize = new Select<>();
-    private Select<String> smooth = new Select<>();
-    private Select<String> edgeCrispening = new Select<>();
+    // data input field
+    private Select<Integer> colorNumber = new Select<>();
+    private Select<Smooth> smooth = new Select<>();
     private Select<Integer> saturation = new Select<>();
     private Select<Integer> contrastRatio = new Select<>();
     private Checkbox isPublic = new Checkbox();
-    private ImageFile newImageFile;
-    // data input field
-    private Select<Integer> colorNumber = new Select<>();
+    private Select<EdgeCrispening> edgeCrispening = new Select<>();
     private Button save = new Button("儲存");
-
+    private Map<String, File> imageFileMap = new HashMap<>();
     // binder with Class SampleImage
-    private Binder<SampleImage> binder = new Binder<>(SampleImage.class);
+    private Binder<ImageInfo> binderImage = new Binder<>(ImageInfo.class);
     // button cancel and button save
     private Button cancel = new Button();
     // file buffer and upload
@@ -72,10 +80,22 @@ public class GenerateImageView extends Div implements LocaleChangeObserver {
     private UploadTCI18N uploadTCI18N;
     private UploadENI18N uploadENI18N;
     // inject sample image service
-    private SampleImageService sampleImageService;
+    private ImageInfoService imageInfoService;
+    private ImageInfo newImageInfo;
 
-    public GenerateImageView(SampleImageService sampleImageService) {
-        addClassName("generate-image-view");
+    private AuthenticatedUser authenticatedUser;
+    private UserService userService;
+    private ImageService imageService;
+
+    private User user;
+
+    public PixelTransformView(ImageInfoService imageInfoService, AuthenticatedUser authenticatedUser, UserService userService, ImageService imageService) {
+        this.imageInfoService = imageInfoService;
+        this.authenticatedUser = authenticatedUser;
+        this.userService = userService;
+        this.imageService = imageService;
+        binderUser = new BeanValidationBinder<>(User.class);
+        addClassName("pixel-transform-view");
 
         add(createTitle());
         add(createFormLayout());
@@ -83,32 +103,73 @@ public class GenerateImageView extends Div implements LocaleChangeObserver {
         add(createUploadLayout());
         add(createButtonLayout());
 
-        binder.bindInstanceFields(this);
+        //binder.bindInstanceFields(this);
         clearForm();
 
         cancel.addClickListener(e -> clearForm());
         save.addClickListener(e -> {
-            sampleImageService.update(binder.getBean());
-            Notification.show("已保存圖片生成參數資訊");
-            ImageInfo newImageInfo = new ImageInfo(colorNumber.getValue(), pixelSize.getValue(), smooth.getValue(), edgeCrispening.getValue(), saturation.getValue(), contrastRatio.getValue(), isPublic.getValue(), newImageFile);
+            if (!imageFileMap.isEmpty()) {
+                double imageFileSize = 0.0;
+                for (Map.Entry<String, File> entry : imageFileMap.entrySet()) {
+                    Optional<User> maybeUser = authenticatedUser.get();
+                    if (maybeUser.isPresent()) {
+                        this.user = maybeUser.get();
+                        // check if file size achieve file size limit
+                        if ((this.user.getImageSize() + (double) (entry.getValue().length() / 1024 / 1024)) < this.user.getImageSizeLimit()) {
+                            newImageInfo = new ImageInfo("PixelTransform", colorNumber.getValue(), pixelSize.getValue(), smooth.getValue().getValue(), edgeCrispening.getValue().getValue(), saturation.getValue(), contrastRatio.getValue(), isPublic.getValue(), entry.getValue(), null, entry.getKey(), this.user.getUsername());
+                            imageService.imageProcess(newImageInfo, this.user);
+                            try {
+                                binderImage.writeBean(newImageInfo);
+                                this.imageInfoService.update(newImageInfo);
+                                this.user.setImageSize(this.user.getImageSize() + (double) entry.getValue().length() / 1024 / 1024);
+                                imageFileSize += (double) entry.getValue().length() / 1024 / 1024;
+                                try {
+                                    binderUser.writeBean(this.user);
+                                    this.userService.update(this.user);
+                                } catch (ValidationException ex) {
+                                    throw new RuntimeException(ex);
+                                }
+                            } catch (ValidationException ex) {
+                                throw new RuntimeException(ex);
+                            }
+                        } else {
+                            Notification.show(String.format("因為圖片儲存空間已滿，從圖片 %s 開始上傳失敗", entry.getKey()));
+                            break;
+                        }
+                    }
+                }
+                Notification.show(String.format("已保存圖片及生成參數資訊，共成功上傳%d張圖片，圖片總大小為 %f MB", imageFileMap.size(), imageFileSize));
+                imageFileMap.clear();
+            } else {
+                Notification.show("沒有上傳圖片或重複上傳圖片");
+            }
             clearForm();
         });
     }
 
     private void clearForm() {
-        binder.setBean(new SampleImage());
+        binderImage.setBean(new ImageInfo());
         // default image configure
         colorNumber.setValue(4);
         pixelSize.setValue(2);
-        smooth.setValue("無");
-        edgeCrispening.setValue("無");
+        if (getLocale().equals(Translator.LOCALE_ZHT)) {
+            //smooth.setItems(Smooth.NoneTC, Smooth.WeakTC, Smooth.MediumTC, Smooth.StrongTC);
+            smooth.setValue(Smooth.NoneTC);
+            //edgeCrispening.setItems(EdgeCrispening.NoneTC, EdgeCrispening.WeakTC, EdgeCrispening.StrongTC);
+            edgeCrispening.setValue(EdgeCrispening.NoneTC);
+        } else {
+            //smooth.setItems(Smooth.NoneEN, Smooth.WeakEN, Smooth.MediumEN, Smooth.StrongEN);
+            smooth.setValue(Smooth.NoneEN);
+            //edgeCrispening.setItems(EdgeCrispening.NoneEN, EdgeCrispening.WeakEN, EdgeCrispening.StrongEN);
+            edgeCrispening.setValue(EdgeCrispening.NoneEN);
+        }
         saturation.setValue(0);
         contrastRatio.setValue(0);
         isPublic.setValue(false);
     }
 
     private Component createTitle() {
-        return new H3("生成圖片");
+        return new H3("設定轉換參數");
     }
 
     private Component createFormLayout() {
@@ -121,11 +182,18 @@ public class GenerateImageView extends Div implements LocaleChangeObserver {
         pixelSize.setItems(1, 2, 3, 4, 5);
         pixelSize.setValue(2);
         smooth.setLabel("平滑程度");
-        smooth.setItems("無", "弱", "中", "強");
-        smooth.setValue("無");
+        if (getLocale().equals(Translator.LOCALE_ZHT)) {
+            smooth.setItems(Smooth.NoneTC, Smooth.WeakTC, Smooth.MediumTC, Smooth.StrongTC);
+            smooth.setValue(Smooth.NoneTC);
+            edgeCrispening.setItems(EdgeCrispening.NoneTC, EdgeCrispening.WeakTC, EdgeCrispening.StrongTC);
+            edgeCrispening.setValue(EdgeCrispening.NoneTC);
+        } else {
+            smooth.setItems(Smooth.NoneEN, Smooth.WeakEN, Smooth.MediumEN, Smooth.StrongEN);
+            smooth.setValue(Smooth.NoneEN);
+            edgeCrispening.setItems(EdgeCrispening.NoneEN, EdgeCrispening.WeakEN, EdgeCrispening.StrongEN);
+            edgeCrispening.setValue(EdgeCrispening.NoneEN);
+        }
         edgeCrispening.setLabel("邊緣銳化");
-        edgeCrispening.setItems("無", "弱", "強");
-        edgeCrispening.setValue("無");
         saturation.setLabel("色度(飽和度)");
         saturation.setItems(-250, -200, -150, -100, -50, 0, 50, 100, 150, 200, 250);
         saturation.setValue(0);
@@ -137,16 +205,6 @@ public class GenerateImageView extends Div implements LocaleChangeObserver {
         formLayout.add(colorNumber, pixelSize, smooth, edgeCrispening, saturation, contrastRatio, isPublic);
         return formLayout;
 
-    }
-
-    private Component createButtonLayout() {
-        HorizontalLayout buttonLayout = new HorizontalLayout();
-        cancel.setText(translator.getTranslation("cancelButton", UI.getCurrent().getLocale(), cancel));
-        buttonLayout.addClassName("button-layout");
-        save.addThemeVariants(ButtonVariant.LUMO_PRIMARY);
-        buttonLayout.add(save);
-        buttonLayout.add(cancel);
-        return buttonLayout;
     }
 
     private Component createUploadLayout() {
@@ -194,7 +252,25 @@ public class GenerateImageView extends Div implements LocaleChangeObserver {
             String absolutePath = savedFileData.getFile().getAbsolutePath();
             if (!mimeType.equals("null")) {
                 if (mimeType.startsWith("image")) {
-                    System.out.printf("Tmp File saved to: %s.%n", absolutePath);
+                    Optional<User> maybeUser = authenticatedUser.get();
+                    if (maybeUser.isPresent()) {
+                        this.user = maybeUser.get();
+                        if ((this.user.getImageSize() + (double) savedFileData.getFile().length() / 1024 / 1024) < this.user.getImageSizeLimit()) {
+                            System.out.printf("Tmp File saved to: %s.%n", absolutePath);
+                        } else {
+                            String errorMessage = String.format("因為儲存空間不足，上傳檔案 %s 失敗", uploadFileName);
+                            Notification notification = Notification.show(errorMessage, 5000,
+                                    Notification.Position.BOTTOM_CENTER);
+                            notification.addThemeVariants(NotificationVariant.LUMO_ERROR);
+                            if (savedFileData.getFile().delete()) {
+                                System.out.printf("Tmp File has been deleted from %s.%n", absolutePath);
+                            } else {
+                                System.out.printf("Tmp File has not been deleted from %s.%n", absolutePath);
+                            }
+                            UI.getCurrent().getPage().reload();
+                            return;
+                        }
+                    }
                 } else {
                     String errorMessage = String.format("因為上傳檔案 %s 非圖片，將忽略該檔案", uploadFileName);
                     Notification notification = Notification.show(errorMessage, 5000,
@@ -205,6 +281,7 @@ public class GenerateImageView extends Div implements LocaleChangeObserver {
                     } else {
                         System.out.printf("Tmp File has not been deleted from %s.%n", absolutePath);
                     }
+                    return;
                 }
             } else {
                 String errorMessage = String.format("因為無法辨識上傳檔案 %s 類型，將忽略該檔案", uploadFileName);
@@ -216,6 +293,7 @@ public class GenerateImageView extends Div implements LocaleChangeObserver {
                 } else {
                     System.out.printf("Tmp File has not been deleted from %s.%n", absolutePath);
                 }
+                return;
             }
             // time stamp for distinguishing different files
             Instant instantNow = Instant.now();
@@ -223,7 +301,11 @@ public class GenerateImageView extends Div implements LocaleChangeObserver {
             Path workingDirectoryPath = Paths.get("");
             // image directory = workingDirectory + image
             // ex C:\path\to\your\app\image
-            File imageDirectoryFile = new File(workingDirectoryPath.toAbsolutePath() + File.separator + "image");
+            Optional<User> maybeUser = authenticatedUser.get();
+            if (maybeUser.isPresent()) {
+                this.user = maybeUser.get();
+            }
+            File imageDirectoryFile = new File(workingDirectoryPath.toAbsolutePath() + File.separator + "src/main/resources/META-INF/resources/images/" + this.user.getId());
             String newFileName = instantNow + "-" + uploadFileName;
             // check if image folder exists
             if (!imageDirectoryFile.exists()) {
@@ -246,7 +328,20 @@ public class GenerateImageView extends Div implements LocaleChangeObserver {
                 String newFileFullName = newFileNameHashed + "." + FilenameUtils.getExtension(uploadFileName);
                 try {
                     Files.copy(savedFileData.getFile().toPath(), imageDirectoryFile.toPath().resolve(newFileFullName), StandardCopyOption.REPLACE_EXISTING);
-                    newImageFile = new ImageFile(imageDirectoryFile.toPath().resolve(newFileFullName));
+                    if (!imageFileMap.containsKey(uploadFileName)) {
+                        imageFileMap.put(uploadFileName, imageDirectoryFile.toPath().resolve(newFileFullName).toFile());
+                    } else {
+                        String errorMessage = String.format("同時上傳相同檔名 %s 的圖片，將只處理第一次上傳的圖片", uploadFileName);
+                        Notification notification = Notification.show(errorMessage, 5000,
+                                Notification.Position.BOTTOM_CENTER);
+                        notification.addThemeVariants(NotificationVariant.LUMO_ERROR);
+                        if (imageDirectoryFile.toPath().resolve(newFileFullName).toFile().delete()) {
+                            System.out.printf("Removed duplicate file from %s.%n", imageDirectoryFile.toPath().resolve(newFileFullName).toAbsolutePath());
+                        } else {
+                            System.out.printf("Failed to remove duplicate file from %s.%n", imageDirectoryFile.toPath().resolve(newFileFullName).toAbsolutePath());
+                        }
+                        return;
+                    }
                 } catch (IOException e) {
                     throw new RuntimeException(e);
                 }
@@ -256,10 +351,18 @@ public class GenerateImageView extends Div implements LocaleChangeObserver {
                 } else {
                     System.out.printf("Failed to remove tmp file from %s.%n", absolutePath);
                 }
-            } else {
-                System.out.printf("Failed to get upload data in tmp folder%n");
             }
         });
+        multiFileUpload.getElement().addEventListener("file-remove", (DomEventListener) e -> {
+            String removedFileName = e.getEventData().getString("event.detail.file.name");
+            File removedFile = imageFileMap.get(removedFileName);
+            if (removedFile.delete()) {
+                System.out.println("Removed file " + removedFileName + " by user");
+            } else {
+                System.out.println("Failed to remove file " + removedFileName + " by user");
+            }
+            imageFileMap.remove(removedFileName);
+        }).addEventData("event.detail.file.name");
         // upload non image file
         multiFileUpload.addFileRejectedListener(event -> {
             String errorMessage = event.getErrorMessage();
@@ -277,14 +380,67 @@ public class GenerateImageView extends Div implements LocaleChangeObserver {
         cancel.setText(translator.getTranslation("cancelButton", UI.getCurrent().getLocale(), cancel));
         if (localeChangeEvent.getLocale().equals(Translator.LOCALE_ZHT)) {
             multiFileUpload.setI18n(uploadTCI18N);
+            smooth.setItems(Smooth.NoneTC, Smooth.WeakTC, Smooth.MediumTC, Smooth.StrongTC);
+            smooth.setValue(Smooth.NoneTC);
+            edgeCrispening.setItems(EdgeCrispening.NoneTC, EdgeCrispening.WeakTC, EdgeCrispening.StrongTC);
+            edgeCrispening.setValue(EdgeCrispening.NoneTC);
         } else {
             multiFileUpload.setI18n(uploadENI18N);
+            smooth.setItems(Smooth.NoneEN, Smooth.WeakEN, Smooth.MediumEN, Smooth.StrongEN);
+            smooth.setValue(Smooth.NoneEN);
+            edgeCrispening.setItems(EdgeCrispening.NoneEN, EdgeCrispening.WeakEN, EdgeCrispening.StrongEN);
+            edgeCrispening.setValue(EdgeCrispening.NoneEN);
         }
     }
 
-    // add image to queue
-    private void addImageToQueue(SampleImage entity) {
-        sampleImageService.save(entity);
+    private Component createButtonLayout() {
+        HorizontalLayout buttonLayout = new HorizontalLayout();
+        cancel.setText(translator.getTranslation("cancelButton", UI.getCurrent().getLocale(), cancel));
+        buttonLayout.addClassName("button-layout");
+        save.addThemeVariants(ButtonVariant.LUMO_PRIMARY);
+        buttonLayout.add(save);
+        buttonLayout.add(cancel);
+        return buttonLayout;
+    }
+
+    private enum Smooth {
+        NoneEN(0, "None"), WeakEN(50, "Weak"), MediumEN(100, "Medium"), StrongEN(200, "Strong"), NoneTC(0, "無"), WeakTC(50, "弱"), MediumTC(100, "中"), StrongTC(200, "強");
+        final Integer value;
+        final String name;
+
+        Smooth(Integer value, String name) {
+            this.value = value;
+            this.name = name;
+        }
+
+        public Integer getValue() {
+            return value;
+        }
+
+        @Override
+        public String toString() {
+            return name;
+        }
+    }
+
+    private enum EdgeCrispening {
+        NoneEN(0, "None"), WeakEN(1, "Weak"), StrongEN(2, "Strong"), NoneTC(0, "無"), WeakTC(1, "弱"), StrongTC(2, "強");
+        final Integer value;
+        final String name;
+
+        EdgeCrispening(Integer value, String name) {
+            this.value = value;
+            this.name = name;
+        }
+
+        public Integer getValue() {
+            return value;
+        }
+
+        @Override
+        public String toString() {
+            return name;
+        }
     }
 
     // upload i18n

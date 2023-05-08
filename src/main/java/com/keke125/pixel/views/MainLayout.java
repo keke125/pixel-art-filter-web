@@ -6,9 +6,8 @@ import com.keke125.pixel.data.entity.User;
 import com.keke125.pixel.security.AuthenticatedUser;
 import com.keke125.pixel.views.about.AboutView;
 import com.keke125.pixel.views.gallery.GalleryView;
-import com.keke125.pixel.views.generateimage.GenerateImageView;
+import com.keke125.pixel.views.generateimage.PixelTransformView;
 import com.keke125.pixel.views.usermanagement.UserManagementView;
-import com.vaadin.flow.component.AbstractField;
 import com.vaadin.flow.component.UI;
 import com.vaadin.flow.component.applayout.AppLayout;
 import com.vaadin.flow.component.applayout.DrawerToggle;
@@ -24,31 +23,21 @@ import com.vaadin.flow.component.html.Header;
 import com.vaadin.flow.component.icon.Icon;
 import com.vaadin.flow.component.icon.VaadinIcon;
 import com.vaadin.flow.component.menubar.MenuBar;
-import com.vaadin.flow.component.menubar.MenuBarVariant;
-import com.vaadin.flow.component.orderedlayout.FlexComponent;
-import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
 import com.vaadin.flow.component.orderedlayout.Scroller;
 import com.vaadin.flow.component.select.Select;
 import com.vaadin.flow.dom.ThemeList;
-import com.vaadin.flow.i18n.I18NProvider;
 import com.vaadin.flow.i18n.LocaleChangeEvent;
 import com.vaadin.flow.i18n.LocaleChangeObserver;
-import com.vaadin.flow.router.HasDynamicTitle;
 import com.vaadin.flow.router.PageTitle;
 import com.vaadin.flow.server.StreamResource;
-import com.vaadin.flow.server.VaadinRequest;
 import com.vaadin.flow.server.auth.AccessAnnotationChecker;
 import com.vaadin.flow.theme.lumo.Lumo;
 import com.vaadin.flow.theme.lumo.LumoUtility;
 
 import java.io.ByteArrayInputStream;
-import java.util.Arrays;
 import java.util.Locale;
 import java.util.Optional;
-import java.util.Properties;
 
-import jakarta.servlet.http.Cookie;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.vaadin.lineawesome.LineAwesomeIcon;
 
 /**
@@ -65,7 +54,7 @@ public class MainLayout extends AppLayout implements LocaleChangeObserver {
     private final Select<Locale> selectLanguage = new Select<>();
     // Navigation
     private AppNavItem galleryViewNav;
-    private AppNavItem generateImageViewNav;
+    private AppNavItem pixelTransformViewNav;
     private AppNavItem aboutViewNav;
     private AppNavItem userManagementViewNav;
 
@@ -131,8 +120,8 @@ public class MainLayout extends AppLayout implements LocaleChangeObserver {
         AppNav nav = new AppNav();
         galleryViewNav = new AppNavItem(translator.getTranslation
                 ("gallery", UI.getCurrent().getLocale()), GalleryView.class, LineAwesomeIcon.IMAGES.create());
-        generateImageViewNav = new AppNavItem(translator.getTranslation
-                ("generate-image", UI.getCurrent().getLocale()), GenerateImageView.class, LineAwesomeIcon.IMAGE.create());
+        pixelTransformViewNav = new AppNavItem(translator.getTranslation
+                ("pixel-transform", UI.getCurrent().getLocale()), PixelTransformView.class, LineAwesomeIcon.IMAGE.create());
         aboutViewNav = new AppNavItem(translator.getTranslation
                 ("about", UI.getCurrent().getLocale()), AboutView.class, LineAwesomeIcon.FILE.create());
         userManagementViewNav = new AppNavItem(translator.getTranslation
@@ -141,8 +130,8 @@ public class MainLayout extends AppLayout implements LocaleChangeObserver {
             nav.addItem(galleryViewNav);
 
         }
-        if (accessChecker.hasAccess(GenerateImageView.class)) {
-            nav.addItem(generateImageViewNav);
+        if (accessChecker.hasAccess(PixelTransformView.class)) {
+            nav.addItem(pixelTransformViewNav);
 
         }
         if (accessChecker.hasAccess(AboutView.class)) {
@@ -212,7 +201,7 @@ public class MainLayout extends AppLayout implements LocaleChangeObserver {
         viewTitle.setText(getCurrentPageTitle());
         selectLanguage.setItemLabelGenerator(g -> translator.getTranslation(g.getLanguage(), UI.getCurrent().getLocale()));
         galleryViewNav.setLabel(translator.getTranslation("gallery", UI.getCurrent().getLocale()));
-        generateImageViewNav.setLabel(translator.getTranslation("generate-image", UI.getCurrent().getLocale()));
+        pixelTransformViewNav.setLabel(translator.getTranslation("pixel-transform", UI.getCurrent().getLocale()));
         aboutViewNav.setLabel(translator.getTranslation("about", UI.getCurrent().getLocale()));
         userManagementViewNav.setLabel(translator.getTranslation("user-management", UI.getCurrent().getLocale()));
     }

@@ -1,7 +1,6 @@
 package com.keke125.pixel.views;
 
 import com.vaadin.flow.i18n.I18NProvider;
-import jakarta.annotation.PostConstruct;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
 
@@ -39,7 +38,7 @@ public class Translator implements I18NProvider {
         final ResourceBundle resourceBundle = ResourceBundle.getBundle(BUNDLE_PREFIX, locale);
         localeMap.put(locale.getLanguage(), resourceBundle);
 
-        String value = null;
+        String value;
         try {
             value = localeMap.get(locale.getLanguage()).getString(s);
         } catch (final MissingResourceException e) {
