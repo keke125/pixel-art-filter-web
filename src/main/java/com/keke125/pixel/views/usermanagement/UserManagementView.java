@@ -1,5 +1,6 @@
 package com.keke125.pixel.views.usermanagement;
 
+import com.keke125.pixel.data.Role;
 import com.keke125.pixel.data.entity.User;
 import com.keke125.pixel.data.service.UserService;
 import com.keke125.pixel.views.MainLayout;
@@ -84,8 +85,8 @@ public class UserManagementView extends Div implements BeforeEnterObserver {
 
         LitRenderer<User> adminRenderer = LitRenderer.<User>of(
                         "<vaadin-icon icon='vaadin:${item.icon}' style='width: var(--lumo-icon-size-s); height: var(--lumo-icon-size-s); color: ${item.color};'></vaadin-icon>")
-                .withProperty("icon", admin -> admin.isAdmin() ? "check" : "minus").withProperty("color",
-                        admin -> admin.isAdmin()
+                .withProperty("icon", admin -> admin.getRoles().contains(Role.ADMIN) ? "check" : "minus").withProperty("color",
+                        admin -> admin.getRoles().contains(Role.ADMIN)
                                 ? "var(--lumo-primary-text-color)"
                                 : "var(--lumo-disabled-text-color)");
 

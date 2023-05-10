@@ -363,7 +363,7 @@ public class PixelTransformView extends Div implements LocaleChangeObserver {
             }
             imageFileMap.remove(removedFileName);
         }).addEventData("event.detail.file.name");
-        // upload non image file
+        // upload non image file (by file extension)
         multiFileUpload.addFileRejectedListener(event -> {
             String errorMessage = event.getErrorMessage();
             Notification notification = Notification.show(errorMessage, 5000,
@@ -443,7 +443,7 @@ public class PixelTransformView extends Div implements LocaleChangeObserver {
         }
     }
 
-    // upload i18n
+    // upload TC i18n
     public static class UploadTCI18N extends UploadI18N {
         public UploadTCI18N() {
             setDropFiles(new DropFiles().setOne("將檔案拖曳至此")
@@ -476,6 +476,7 @@ public class PixelTransformView extends Div implements LocaleChangeObserver {
         return new H3("上傳圖片");
     }
 
+    // upload EN i18n
     public static class UploadENI18N extends UploadI18N {
         public UploadENI18N() {
             setDropFiles(new DropFiles().setOne("Drop file here")

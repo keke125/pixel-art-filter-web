@@ -154,9 +154,11 @@ public class MainLayout extends AppLayout implements LocaleChangeObserver {
             User user = maybeUser.get();
 
             Avatar avatar = new Avatar(user.getUsername());
-            StreamResource resource = new StreamResource("profile-pic",
-                    () -> new ByteArrayInputStream(user.getProfilePicture()));
-            avatar.setImageResource(resource);
+            if (user.getAvatarImage() != null) {
+                StreamResource resource = new StreamResource("profile-pic",
+                        () -> new ByteArrayInputStream(user.getAvatarImage()));
+                avatar.setImageResource(resource);
+            }
             avatar.setThemeName("xsmall");
             avatar.getElement().setAttribute("tabindex", "-1");
 
