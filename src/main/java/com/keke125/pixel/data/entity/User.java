@@ -31,6 +31,7 @@ import java.util.Set;
 public class User extends AbstractEntity implements UserDetails {
     @NotNull
     @Length(min = 1, max = 32)
+    @Column(unique = true)
     private String username;
     @NotNull
     @Length(min = 1, max = 32)

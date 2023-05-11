@@ -52,6 +52,10 @@ public class UserService {
         return passwordEncoder;
     }
 
+    public boolean isUsernameExist(String username) {
+        return repository.findByUsername(username) != null;
+    }
+
     /**
      * Utility Exception class that we can use in the frontend to show that
      * something went wrong during save.

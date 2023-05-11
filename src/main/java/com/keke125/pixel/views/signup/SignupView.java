@@ -219,7 +219,7 @@ public class SignupView extends VerticalLayout {
         binder = new BeanValidationBinder<>(User.class);
 
         // Basic name fields that are required to fill in
-        binder.forField(usernameField).asRequired().bind("username");
+        binder.forField(usernameField).asRequired().withValidator(this::duplicateValidator).bind("username");
         binder.forField(nameField).asRequired().bind("name");
 
         // EmailField uses a Validator that extends one of the built-in ones.
@@ -334,6 +334,15 @@ public class SignupView extends VerticalLayout {
         }
 
         return ValidationResult.error("Passwords do not match");
+    }
+
+    private ValidationResult duplicateValidator(String username, ValueContext ctx) {
+
+        if (!service.isUsernameExist(username)) {
+            return ValidationResult.ok();
+        } else {
+            return ValidationResult.error("The username has already been taken. Please try a different one.");
+        }
     }
 
     // upload TC i18n
