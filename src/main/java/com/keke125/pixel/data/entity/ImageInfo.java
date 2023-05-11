@@ -5,7 +5,6 @@ import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
-import java.io.File;
 
 @Entity
 @Data
@@ -20,8 +19,9 @@ public class ImageInfo extends AbstractEntity {
     private Integer saturation;
     private Integer contrastRatio;
     private boolean isPublic;
-    private File imageOriginalFile;
-    private File imageNewFile;
+    private String imageOriginalFile;
+    private String imageNewFile;
     private String imageOriginalName;
+    private String imageNewName;
     private String ownerName;
 }

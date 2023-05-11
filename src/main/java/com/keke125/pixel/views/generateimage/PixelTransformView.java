@@ -116,7 +116,7 @@ public class PixelTransformView extends Div implements LocaleChangeObserver {
                         this.user = maybeUser.get();
                         // check if file size achieve file size limit
                         if ((this.user.getImageSize() + (double) (entry.getValue().length() / 1024 / 1024)) < this.user.getImageSizeLimit()) {
-                            newImageInfo = new ImageInfo("PixelTransform", colorNumber.getValue(), pixelSize.getValue(), smooth.getValue().getValue(), edgeCrispening.getValue().getValue(), saturation.getValue(), contrastRatio.getValue(), isPublic.getValue(), entry.getValue(), null, entry.getKey(), this.user.getUsername());
+                            newImageInfo = new ImageInfo("PixelTransform", colorNumber.getValue(), pixelSize.getValue(), smooth.getValue().getValue(), edgeCrispening.getValue().getValue(), saturation.getValue(), contrastRatio.getValue(), isPublic.getValue(), entry.getValue().getPath(), null, entry.getKey(), null, this.user.getUsername());
                             imageService.imageProcess(newImageInfo, this.user);
                             try {
                                 binderImage.writeBean(newImageInfo);
@@ -302,9 +302,7 @@ public class PixelTransformView extends Div implements LocaleChangeObserver {
             // image directory = workingDirectory + image
             // ex C:\path\to\your\app\image
             Optional<User> maybeUser = authenticatedUser.get();
-            if (maybeUser.isPresent()) {
-                this.user = maybeUser.get();
-            }
+            maybeUser.ifPresent(value -> this.user = value);
             File imageDirectoryFile = new File(workingDirectoryPath.toAbsolutePath() + File.separator + "src/main/resources/META-INF/resources/images/" + this.user.getId());
             String newFileName = instantNow + "-" + uploadFileName;
             // check if image folder exists
@@ -325,6 +323,7 @@ public class PixelTransformView extends Div implements LocaleChangeObserver {
             // copy image from tmp folder to specific folder and rename image name
             if (savedFileData.getFile().exists() && savedFileData.getFile().canRead()) {
                 String newFileNameHashed = DigestUtils.sha256Hex(newFileName);
+                newFileNameHashed = newFileNameHashed.substring(0, 4);
                 String newFileFullName = newFileNameHashed + "." + FilenameUtils.getExtension(uploadFileName);
                 try {
                     Files.copy(savedFileData.getFile().toPath(), imageDirectoryFile.toPath().resolve(newFileFullName), StandardCopyOption.REPLACE_EXISTING);

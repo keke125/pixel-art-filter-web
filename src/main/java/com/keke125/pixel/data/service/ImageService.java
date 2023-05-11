@@ -95,12 +95,14 @@ public class ImageService {
         File imageDirectoryFile = new File(workingDirectoryPath.toAbsolutePath() + File.separator + "src/main/resources/META-INF/resources/images/" + user.getId());
         String newFileName = instantNow + "-" + entity.getImageOriginalName();
         String newFileNameHashed = DigestUtils.sha256Hex(newFileName);
+        newFileNameHashed = newFileNameHashed.substring(0, 4);
         String newFileFullName = newFileNameHashed + "." + FilenameUtils.getExtension(entity.getImageOriginalName());
         // PixelTransform
         File newFile = new File(imageDirectoryFile.toPath().resolve(newFileFullName).toAbsolutePath().toString());
-        Mat imgMat = Imgcodecs.imread(entity.getImageOriginalFile().getAbsolutePath());
+        Mat imgMat = Imgcodecs.imread(entity.getImageOriginalFile());
         PixelTransform.saveImg(PixelTransform.transform(imgMat, entity.getColorNumber(), entity.getPixelSize(), entity.getSmooth(), entity.getEdgeCrispening(), entity.getContrastRatio(), entity.getSaturation()), newFile);
-        entity.setImageNewFile(newFile);
+        entity.setImageNewFile(newFile.getPath());
+        entity.setImageNewName(newFileFullName);
         try {
             binderImage.writeBean(entity);
         } catch (ValidationException e) {
