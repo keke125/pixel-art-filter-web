@@ -37,7 +37,6 @@ import jakarta.annotation.security.RolesAllowed;
 import org.apache.commons.codec.digest.DigestUtils;
 import org.apache.commons.io.FilenameUtils;
 import org.apache.tika.Tika;
-import org.opencv.core.Core;
 
 import java.io.*;
 import java.nio.file.Files;
@@ -116,7 +115,7 @@ public class PixelTransformView extends Div implements LocaleChangeObserver {
                         this.user = maybeUser.get();
                         // check if file size achieve file size limit
                         if ((this.user.getImageSize() + (double) (entry.getValue().length() / 1024 / 1024)) < this.user.getImageSizeLimit()) {
-                            newImageInfo = new ImageInfo("PixelTransform", colorNumber.getValue(), pixelSize.getValue(), smooth.getValue().getValue(), edgeCrispening.getValue().getValue(), saturation.getValue(), contrastRatio.getValue(), isPublic.getValue(), entry.getValue().getPath(), null, entry.getKey(), null, this.user.getUsername());
+                            newImageInfo = new ImageInfo("Pixel Transform", colorNumber.getValue(), pixelSize.getValue(), smooth.getValue().getValue(), edgeCrispening.getValue().getValue(), saturation.getValue(), contrastRatio.getValue(), isPublic.getValue(), entry.getValue().getPath(), null, entry.getValue().getName(), null, this.user.getUsername(), entry.getKey());
                             imageService.imageProcess(newImageInfo, this.user);
                             try {
                                 binderImage.writeBean(newImageInfo);

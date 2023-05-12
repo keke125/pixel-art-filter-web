@@ -24,4 +24,5 @@ public class ImageInfo extends AbstractEntity {
     private String imageOriginalName;
     private String imageNewName;
     private String ownerName;
+    private String uploadImageName;
 }

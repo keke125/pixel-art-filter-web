@@ -44,7 +44,6 @@ public class GalleryView extends Main implements HasComponents, HasStyle {
     private ImageService imageService;
     private AuthenticatedUser authenticatedUser;
     private User user;
-    private long countImageInfos;
 
     public GalleryView(ImageService imageService, AuthenticatedUser authenticatedUser) {
         this.imageService = imageService;
@@ -55,7 +54,8 @@ public class GalleryView extends Main implements HasComponents, HasStyle {
             this.user = maybeUser.get();
             List<ImageInfo> imageInfoList = imageService.findAllImageInfosByOwnerName(this.user.getUsername());
             for (ImageInfo i : imageInfoList) {
-                imageContainer.add(new GalleryViewCard("images" + File.separator + this.user.getId() + File.separator + i.getImageNewName(), i.getImageOriginalName()));
+                imageContainer.add(new GalleryViewCard("images" + File.separator + this.user.getId() + File.separator + i.getImageOriginalName(), "images" + File.separator + this.user.getId() + File.separator + i.getImageNewName(), i.getUploadImageName(), i.getFilterType()));
+                //imageContainer.add(new GalleryViewCard("https://images.unsplash.com/photo-1519681393784-d120267933ba?ixid=MXwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHw%3D&ixlib=rb-1.2.1&auto=format&fit=crop&w=750&q=80","https://images.unsplash.com/photo-1519681393784-d120267933ba?ixid=MXwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHw%3D&ixlib=rb-1.2.1&auto=format&fit=crop&w=750&q=80", i.getImageOriginalName(),i.getFilterType()));
             }
         }
     }

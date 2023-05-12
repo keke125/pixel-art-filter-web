@@ -1,9 +1,14 @@
 package com.keke125.pixel.views.gallery;
 
+import com.vaadin.flow.component.button.Button;
+import com.vaadin.flow.component.button.ButtonVariant;
+import com.vaadin.flow.component.dialog.Dialog;
 import com.vaadin.flow.component.html.Div;
 import com.vaadin.flow.component.html.Image;
 import com.vaadin.flow.component.html.ListItem;
 import com.vaadin.flow.component.html.Span;
+import com.vaadin.flow.component.orderedlayout.VerticalLayout;
+import com.vaadin.flow.component.tabs.TabSheet;
 import com.vaadin.flow.theme.lumo.LumoUtility.AlignItems;
 import com.vaadin.flow.theme.lumo.LumoUtility.Background;
 import com.vaadin.flow.theme.lumo.LumoUtility.BorderRadius;
@@ -19,7 +24,7 @@ import com.vaadin.flow.theme.lumo.LumoUtility.Width;
 
 public class GalleryViewCard extends ListItem {
 
-    public GalleryViewCard(String path, String text) {
+    public GalleryViewCard(String originalPath, String generatedPath, String text, String filterType) {
         addClassNames(Background.CONTRAST_5, Display.FLEX, FlexDirection.COLUMN, AlignItems.START, Padding.MEDIUM,
                 BorderRadius.LARGE);
 
@@ -28,28 +33,40 @@ public class GalleryViewCard extends ListItem {
                 Margin.Bottom.MEDIUM, Overflow.HIDDEN, BorderRadius.MEDIUM, Width.FULL);
         div.setHeight("160px");
 
-        Image image = new Image(path, text);
+        Image image = new Image(generatedPath, "generated-" + text);
         image.setWidth("100%");
 
         div.add(image);
 
+        Dialog detailDialog = new Dialog();
+        detailDialog.setModal(false);
+        detailDialog.setHeaderTitle("Image Info");
+        detailDialog.setDraggable(true);
+        detailDialog.setResizable(true);
+
+        TabSheet imagesTabs = new TabSheet();
+        imagesTabs.add("Original", new Div(new Image(originalPath, "original-" + text)));
+        imagesTabs.add("Generated", new Div(new Image(generatedPath, "generated-" + text)));
+        VerticalLayout dialogLayout = new VerticalLayout();
+        dialogLayout.add(imagesTabs);
+        detailDialog.add(dialogLayout);
+
+        //Button saveButton = createSaveButton(detailDialog);
+        Button closeButton = new Button("Close", e -> detailDialog.close());
+        closeButton.addThemeVariants(ButtonVariant.LUMO_TERTIARY);
+        detailDialog.getHeader().add(closeButton);
+
+
+        Button detailButton = new Button("View Details");
+        detailButton.addClickListener(clickEvent -> detailDialog.open());
         Span header = new Span();
         header.addClassNames(FontSize.XLARGE, FontWeight.SEMIBOLD);
         header.setText(text);
 
-        //Span subtitle = new Span();
-        //subtitle.addClassNames(FontSize.SMALL, TextColor.SECONDARY);
-        //subtitle.setText("Card subtitle");
-
-        //Paragraph description = new Paragraph(
-        //"Lorem ipsum dolor sit amet, consectetur adipisicing elit, sed do eiusmod tempor incididunt ut.");
-        //description.addClassName(Margin.Vertical.MEDIUM);
-
         Span badge = new Span();
         badge.getElement().setAttribute("theme", "badge");
-        badge.setText("Label");
+        badge.setText(filterType);
 
-        //add(div, header, subtitle, description, badge);
-        add(div, header, badge);
+        add(div, header, badge, detailButton, detailDialog);
     }
 }
