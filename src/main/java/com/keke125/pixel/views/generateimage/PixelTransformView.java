@@ -177,10 +177,15 @@ public class PixelTransformView extends Div implements LocaleChangeObserver {
         colorNumber.setLabel(translator.getTranslation("colorNumber", UI.getCurrent().getLocale(), colorNumber));
         colorNumber.setItems(2, 4, 8, 16);
         colorNumber.setValue(4);
+        colorNumber.setTooltipText("Color Number refers to the number of colors to be reserved after the pixel transform.");
         pixelSize.setLabel("像素大小");
         pixelSize.setItems(1, 2, 3, 4, 5);
         pixelSize.setValue(2);
+        pixelSize.setTooltipText("Pixel Size refers to the size of each pixel in an image. If the pixel size is increased, the image will become more blurred.");
         smooth.setLabel("平滑程度");
+        smooth.setTooltipText("Smooth will blur certain parts of your image, resulting in a reduction of noise points in the final output.");
+        edgeCrispening.setLabel("邊緣銳化");
+        edgeCrispening.setTooltipText("Outlines Enhance can help to emphasize objects within an image.");
         if (getLocale().equals(Translator.LOCALE_ZHT)) {
             smooth.setItems(Smooth.NoneTC, Smooth.WeakTC, Smooth.MediumTC, Smooth.StrongTC);
             smooth.setValue(Smooth.NoneTC);
@@ -192,15 +197,17 @@ public class PixelTransformView extends Div implements LocaleChangeObserver {
             edgeCrispening.setItems(EdgeCrispening.NoneEN, EdgeCrispening.WeakEN, EdgeCrispening.StrongEN);
             edgeCrispening.setValue(EdgeCrispening.NoneEN);
         }
-        edgeCrispening.setLabel("邊緣銳化");
         saturation.setLabel("色度(飽和度)");
         saturation.setItems(-250, -200, -150, -100, -50, 0, 50, 100, 150, 200, 250);
         saturation.setValue(0);
+        saturation.setTooltipText("Saturation can help to adjust the light intensity of an image.");
         contrastRatio.setLabel("對比度");
         contrastRatio.setItems(-250, -200, -150, -100, -50, 0, 50, 100, 150, 200, 250);
         contrastRatio.setValue(0);
+        contrastRatio.setTooltipText("Contrast Ratio can help to make an image appear more intense or have greater contrast.");
         isPublic.setLabel("公開圖片");
         isPublic.setValue(false);
+        isPublic.setTooltipText("By checking this box, the image after the pixel transform can be shared via a link.");
         formLayout.add(colorNumber, pixelSize, smooth, edgeCrispening, saturation, contrastRatio, isPublic);
         return formLayout;
 

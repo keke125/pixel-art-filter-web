@@ -38,12 +38,28 @@ public class GalleryViewCard extends ListItem {
 
         div.add(image);
 
+        // gallery card header
+        Span header = new Span();
+        header.addClassNames(FontSize.XLARGE, FontWeight.SEMIBOLD);
+        header.setText(text);
+
+        // gallery card badge
+        Span badge = new Span();
+        badge.getElement().setAttribute("theme", "badge");
+        badge.setText(filterType);
+
+        // show image detail info
         Dialog detailDialog = new Dialog();
         detailDialog.setModal(false);
         detailDialog.setHeaderTitle("Image Info");
         detailDialog.setDraggable(true);
         detailDialog.setResizable(true);
 
+        // click to show detail dialog
+        Button detailButton = new Button("View Details");
+        detailButton.addClickListener(clickEvent -> detailDialog.open());
+
+        // show original image and generated image
         TabSheet imagesTabs = new TabSheet();
         imagesTabs.add("Original", new Div(new Image(originalPath, "original-" + text)));
         imagesTabs.add("Generated", new Div(new Image(generatedPath, "generated-" + text)));
@@ -51,21 +67,10 @@ public class GalleryViewCard extends ListItem {
         dialogLayout.add(imagesTabs);
         detailDialog.add(dialogLayout);
 
-        //Button saveButton = createSaveButton(detailDialog);
+        // close detail dialog
         Button closeButton = new Button("Close", e -> detailDialog.close());
         closeButton.addThemeVariants(ButtonVariant.LUMO_TERTIARY);
         detailDialog.getHeader().add(closeButton);
-
-
-        Button detailButton = new Button("View Details");
-        detailButton.addClickListener(clickEvent -> detailDialog.open());
-        Span header = new Span();
-        header.addClassNames(FontSize.XLARGE, FontWeight.SEMIBOLD);
-        header.setText(text);
-
-        Span badge = new Span();
-        badge.getElement().setAttribute("theme", "badge");
-        badge.setText(filterType);
 
         add(div, header, badge, detailButton, detailDialog);
     }
