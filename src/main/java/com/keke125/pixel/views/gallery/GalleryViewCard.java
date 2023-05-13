@@ -1,13 +1,12 @@
 package com.keke125.pixel.views.gallery;
 
 import com.keke125.pixel.data.entity.ImageInfo;
+import com.keke125.pixel.views.generateimage.PixelTransformView;
 import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.button.ButtonVariant;
+import com.vaadin.flow.component.details.Details;
 import com.vaadin.flow.component.dialog.Dialog;
-import com.vaadin.flow.component.html.Div;
-import com.vaadin.flow.component.html.Image;
-import com.vaadin.flow.component.html.ListItem;
-import com.vaadin.flow.component.html.Span;
+import com.vaadin.flow.component.html.*;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
 import com.vaadin.flow.component.tabs.TabSheet;
 import com.vaadin.flow.server.StreamResource;
@@ -95,6 +94,33 @@ public class GalleryViewCard extends ListItem {
         VerticalLayout dialogLayout = new VerticalLayout();
         dialogLayout.add(imagesTabs);
         detailDialog.add(dialogLayout);
+
+        // show image transform parameter
+        Span colorNumber = new Span("Color number: " + imageInfo.getColorNumber());
+        Span pixelSize = new Span("Pixel size: " + imageInfo.getPixelSize());
+        Span smooth = new Span("Smooth: " + PixelTransformView.Smooth.valueToName(imageInfo.getSmooth()));
+        Span edgeCrispening = new Span("Edge crispening: " + PixelTransformView.EdgeCrispening.valueToName(imageInfo.getEdgeCrispening()));
+        Span saturation = new Span("Saturation: " + imageInfo.getSaturation());
+        Span contrastRatio = new Span("Contras ratio: " + imageInfo.getContrastRatio());
+        VerticalLayout parameterLayout = new VerticalLayout(colorNumber, pixelSize, smooth, edgeCrispening, saturation, contrastRatio);
+        parameterLayout.setSpacing(false);
+        parameterLayout.setPadding(false);
+        Details parameterDetails = new Details("Image transform parameter", parameterLayout);
+        detailDialog.add(parameterDetails);
+
+        // download original
+        Anchor downloadOriginal = new Anchor(originalResource, "Download Original");
+        downloadOriginal.getElement().setAttribute("download", true);
+        downloadOriginal.removeAll();
+        downloadOriginal.add(new Button("Download Original"));
+        detailDialog.getFooter().add(downloadOriginal);
+
+        // download generated
+        Anchor downloadGenerated = new Anchor(generatedResource, "Download Generated");
+        downloadGenerated.getElement().setAttribute("download", true);
+        downloadGenerated.removeAll();
+        downloadGenerated.add(new Button("Download Generated"));
+        detailDialog.getFooter().add(downloadGenerated);
 
         // close detail dialog
         Button closeButton = new Button("Close", e -> detailDialog.close());

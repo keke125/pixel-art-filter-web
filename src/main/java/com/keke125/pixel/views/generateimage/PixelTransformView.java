@@ -84,7 +84,6 @@ public class PixelTransformView extends Div implements LocaleChangeObserver {
 
     private AuthenticatedUser authenticatedUser;
     private UserService userService;
-    private ImageService imageService;
 
     private User user;
 
@@ -92,7 +91,6 @@ public class PixelTransformView extends Div implements LocaleChangeObserver {
         this.imageInfoService = imageInfoService;
         this.authenticatedUser = authenticatedUser;
         this.userService = userService;
-        this.imageService = imageService;
         binderUser = new BeanValidationBinder<>(User.class);
         addClassName("pixel-transform-view");
 
@@ -417,7 +415,7 @@ public class PixelTransformView extends Div implements LocaleChangeObserver {
         return buttonLayout;
     }
 
-    private enum Smooth {
+    public enum Smooth {
         NoneEN(0, "None"), WeakEN(50, "Weak"), MediumEN(100, "Medium"), StrongEN(200, "Strong"), NoneTC(0, "無"), WeakTC(50, "弱"), MediumTC(100, "中"), StrongTC(200, "強");
         final Integer value;
         final String name;
@@ -431,13 +429,27 @@ public class PixelTransformView extends Div implements LocaleChangeObserver {
             return value;
         }
 
+        public static String valueToName(Integer value) {
+            String name = null;
+            if (value == 0) {
+                name = "None";
+            } else if (value == 50) {
+                name = "Weak";
+            } else if (value == 100) {
+                name = "Medium";
+            } else if (value == 200) {
+                name = "Strong";
+            }
+            return name;
+        }
+
         @Override
         public String toString() {
             return name;
         }
     }
 
-    private enum EdgeCrispening {
+    public enum EdgeCrispening {
         NoneEN(0, "None"), WeakEN(1, "Weak"), StrongEN(2, "Strong"), NoneTC(0, "無"), WeakTC(1, "弱"), StrongTC(2, "強");
         final Integer value;
         final String name;
@@ -445,6 +457,18 @@ public class PixelTransformView extends Div implements LocaleChangeObserver {
         EdgeCrispening(Integer value, String name) {
             this.value = value;
             this.name = name;
+        }
+
+        public static String valueToName(Integer value) {
+            String name = null;
+            if (value == 0) {
+                name = "None";
+            } else if (value == 1) {
+                name = "Weak";
+            } else if (value == 2) {
+                name = "Strong";
+            }
+            return name;
         }
 
         public Integer getValue() {

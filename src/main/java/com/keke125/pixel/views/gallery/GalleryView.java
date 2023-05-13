@@ -1,6 +1,5 @@
 package com.keke125.pixel.views.gallery;
 
-import com.keke125.pixel.core.Util;
 import com.keke125.pixel.data.entity.ImageInfo;
 import com.keke125.pixel.data.entity.User;
 import com.keke125.pixel.data.service.ImageService;
@@ -14,7 +13,6 @@ import com.vaadin.flow.component.html.OrderedList;
 import com.vaadin.flow.component.html.Paragraph;
 import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
-import com.vaadin.flow.component.select.Select;
 import com.vaadin.flow.router.PageTitle;
 import com.vaadin.flow.router.Route;
 import com.vaadin.flow.router.RouteAlias;
@@ -30,7 +28,6 @@ import com.vaadin.flow.theme.lumo.LumoUtility.Padding;
 import com.vaadin.flow.theme.lumo.LumoUtility.TextColor;
 import jakarta.annotation.security.RolesAllowed;
 
-import java.nio.file.Path;
 import java.util.List;
 import java.util.Optional;
 
@@ -42,22 +39,17 @@ public class GalleryView extends Main implements HasComponents, HasStyle {
 
     private OrderedList imageContainer;
 
-    private ImageService imageService;
     private AuthenticatedUser authenticatedUser;
     private User user;
 
     public GalleryView(ImageService imageService, AuthenticatedUser authenticatedUser) {
-        this.imageService = imageService;
         this.authenticatedUser = authenticatedUser;
         constructUI();
         Optional<User> maybeUser = authenticatedUser.get();
         if (maybeUser.isPresent()) {
             this.user = maybeUser.get();
             List<ImageInfo> imageInfoList = imageService.findAllImageInfosByOwnerName(this.user.getUsername());
-            Path workingDirectoryPath = Util.getRootPath();
             for (ImageInfo i : imageInfoList) {
-                // System.out.printf("%s\n",workingDirectoryPath + File.separator + "images" + File.separator + this.user.getId() + File.separator + "original" + File.separator + i.getImageOriginalName());
-                // System.out.printf("%s\n",workingDirectoryPath + File.separator + "images" + File.separator + this.user.getId() + File.separator + "generated" + File.separator + i.getImageNewName());
                 imageContainer.add(new GalleryViewCard(i));
             }
         }
@@ -77,15 +69,10 @@ public class GalleryView extends Main implements HasComponents, HasStyle {
         description.addClassNames(Margin.Bottom.XLARGE, Margin.Top.NONE, TextColor.SECONDARY);
         headerContainer.add(header, description);
 
-        Select<String> sortBy = new Select<>();
-        sortBy.setLabel("Sort by");
-        sortBy.setItems("Popularity", "Newest first", "Oldest first");
-        sortBy.setValue("Popularity");
-
         imageContainer = new OrderedList();
         imageContainer.addClassNames(Gap.MEDIUM, Display.GRID, ListStyleType.NONE, Margin.NONE, Padding.NONE);
 
-        container.add(headerContainer, sortBy);
+        container.add(headerContainer);
         add(container, imageContainer);
 
     }
