@@ -1,6 +1,7 @@
 package com.keke125.pixel.data.service;
 
 import com.keke125.pixel.core.PixelTransform;
+import com.keke125.pixel.core.Util;
 import com.keke125.pixel.data.entity.ImageInfo;
 import com.keke125.pixel.data.entity.User;
 import com.vaadin.flow.data.binder.Binder;
@@ -14,7 +15,6 @@ import org.springframework.stereotype.Service;
 
 import java.io.File;
 import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.time.Instant;
 import java.util.List;
 
@@ -91,14 +91,20 @@ public class ImageService {
         // time stamp for distinguishing different files
         Instant instantNow = Instant.now();
         // get current directory
-        Path workingDirectoryPath = Paths.get("");
-        File imageDirectoryFile = new File(workingDirectoryPath.toAbsolutePath() + File.separator + "src/main/resources/META-INF/resources/images/" + user.getId());
-        String newFileName = instantNow + "-" + entity.getImageOriginalName();
+        Path workingDirectoryPath = Util.getRootPath();
+        File originalImageDirectoryFile = new File(workingDirectoryPath.toAbsolutePath() + File.separator + "images" + File.separator + user.getId() + File.separator + "original");
+        String newFileName = instantNow + "-" + entity.getUploadImageName();
         String newFileNameHashed = DigestUtils.sha256Hex(newFileName);
-        newFileNameHashed = newFileNameHashed.substring(0, 4);
+        newFileNameHashed = newFileNameHashed.substring(0, 8);
         String newFileFullName = newFileNameHashed + "." + FilenameUtils.getExtension(entity.getImageOriginalName());
         // PixelTransform
-        File newFile = new File(imageDirectoryFile.toPath().resolve(newFileFullName).toAbsolutePath().toString());
+        File generatedImageDirectoryFile = new File(workingDirectoryPath.toAbsolutePath() + File.separator + "images" + File.separator + user.getId() + File.separator + "generated");
+        File newFile;
+        if (generatedImageDirectoryFile.mkdirs() || generatedImageDirectoryFile.exists()) {
+            newFile = new File(generatedImageDirectoryFile.toPath().resolve(newFileFullName).toAbsolutePath().toString());
+        } else {
+            newFile = new File(originalImageDirectoryFile.toPath().resolve(newFileFullName).toAbsolutePath().toString());
+        }
         Mat imgMat = Imgcodecs.imread(entity.getImageOriginalFile());
         PixelTransform.saveImg(PixelTransform.transform(imgMat, entity.getColorNumber(), entity.getPixelSize(), entity.getSmooth(), entity.getEdgeCrispening(), entity.getContrastRatio(), entity.getSaturation()), newFile);
         entity.setImageNewFile(newFile.getPath());

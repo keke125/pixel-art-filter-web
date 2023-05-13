@@ -87,6 +87,12 @@
             <artifactId>spring-boot-devtools</artifactId>
             <optional>true</optional>
         </dependency>
+        <!-- https://mvnrepository.com/artifact/org.springframework.boot/spring-boot-maven-plugin -->
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-maven-plugin</artifactId>
+            <version>3.0.6</version>
+        </dependency>
         <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-test</artifactId>
@@ -119,6 +125,12 @@
             <groupId>org.bouncycastle</groupId>
             <artifactId>bcprov-jdk18on</artifactId>
             <version>1.73</version>
+        </dependency>
+        <!-- https://mvnrepository.com/artifact/opencv/opencv -->
+        <dependency>
+            <groupId>org</groupId>
+            <artifactId>opencv</artifactId>
+            <version>4.6.0</version>
         </dependency>
     </dependencies>
 

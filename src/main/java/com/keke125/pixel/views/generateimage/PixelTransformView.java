@@ -1,5 +1,6 @@
 package com.keke125.pixel.views.generateimage;
 
+import com.keke125.pixel.core.Util;
 import com.keke125.pixel.data.entity.ImageInfo;
 import com.keke125.pixel.data.entity.User;
 import com.keke125.pixel.data.service.ImageInfoService;
@@ -41,7 +42,6 @@ import org.apache.tika.Tika;
 import java.io.*;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.nio.file.StandardCopyOption;
 import java.time.Instant;
 import java.util.Arrays;
@@ -304,32 +304,41 @@ public class PixelTransformView extends Div implements LocaleChangeObserver {
             // time stamp for distinguishing different files
             Instant instantNow = Instant.now();
             // get current directory
-            Path workingDirectoryPath = Paths.get("");
-            // image directory = workingDirectory + image
-            // ex C:\path\to\your\app\image
+            // image directory = workingDirectory + images + $userid
+            Path workingDirectoryPath = Util.getRootPath();
             Optional<User> maybeUser = authenticatedUser.get();
             maybeUser.ifPresent(value -> this.user = value);
-            File imageDirectoryFile = new File(workingDirectoryPath.toAbsolutePath() + File.separator + "src/main/resources/META-INF/resources/images/" + this.user.getId());
+            File imageDirectoryFile = new File(workingDirectoryPath.toAbsolutePath() + File.separator + "images" + File.separator + this.user.getId() + File.separator + "original");
             String newFileName = instantNow + "-" + uploadFileName;
             // check if image folder exists
             if (!imageDirectoryFile.exists()) {
-                if (imageDirectoryFile.mkdir()) {
+                if (imageDirectoryFile.mkdirs()) {
                     System.out.printf("Folder %s has been created.%n", imageDirectoryFile.getAbsolutePath());
                 } else {
                     System.out.printf("Failed to create Folder %s.%n", imageDirectoryFile.getAbsolutePath());
+                    if (savedFileData.getFile().delete()) {
+                        System.out.printf("Tmp File has been deleted from %s.%n", absolutePath);
+                    } else {
+                        System.out.printf("Tmp File has not been deleted from %s.%n", absolutePath);
+                    }
                     return;
                 }
             }
             // check image folder privilege
             if (!(imageDirectoryFile.canRead() && imageDirectoryFile.canWrite())) {
                 System.out.printf("Don't have privilege to write and read folder %s%n", imageDirectoryFile.getAbsolutePath());
+                if (savedFileData.getFile().delete()) {
+                    System.out.printf("Tmp File has been deleted from %s.%n", absolutePath);
+                } else {
+                    System.out.printf("Tmp File has not been deleted from %s.%n", absolutePath);
+                }
                 return;
             }
             // if real file type is image
             // copy image from tmp folder to specific folder and rename image name
             if (savedFileData.getFile().exists() && savedFileData.getFile().canRead()) {
                 String newFileNameHashed = DigestUtils.sha256Hex(newFileName);
-                newFileNameHashed = newFileNameHashed.substring(0, 4);
+                newFileNameHashed = newFileNameHashed.substring(0, 8);
                 String newFileFullName = newFileNameHashed + "." + FilenameUtils.getExtension(uploadFileName);
                 try {
                     Files.copy(savedFileData.getFile().toPath(), imageDirectoryFile.toPath().resolve(newFileFullName), StandardCopyOption.REPLACE_EXISTING);

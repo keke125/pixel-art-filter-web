@@ -1,5 +1,6 @@
 package com.keke125.pixel.views.gallery;
 
+import com.keke125.pixel.core.Util;
 import com.keke125.pixel.data.entity.ImageInfo;
 import com.keke125.pixel.data.entity.User;
 import com.keke125.pixel.data.service.ImageService;
@@ -29,7 +30,7 @@ import com.vaadin.flow.theme.lumo.LumoUtility.Padding;
 import com.vaadin.flow.theme.lumo.LumoUtility.TextColor;
 import jakarta.annotation.security.RolesAllowed;
 
-import java.io.File;
+import java.nio.file.Path;
 import java.util.List;
 import java.util.Optional;
 
@@ -53,9 +54,11 @@ public class GalleryView extends Main implements HasComponents, HasStyle {
         if (maybeUser.isPresent()) {
             this.user = maybeUser.get();
             List<ImageInfo> imageInfoList = imageService.findAllImageInfosByOwnerName(this.user.getUsername());
+            Path workingDirectoryPath = Util.getRootPath();
             for (ImageInfo i : imageInfoList) {
-                imageContainer.add(new GalleryViewCard("images" + File.separator + this.user.getId() + File.separator + i.getImageOriginalName(), "images" + File.separator + this.user.getId() + File.separator + i.getImageNewName(), i.getUploadImageName(), i.getFilterType()));
-                //imageContainer.add(new GalleryViewCard("https://images.unsplash.com/photo-1519681393784-d120267933ba?ixid=MXwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHw%3D&ixlib=rb-1.2.1&auto=format&fit=crop&w=750&q=80","https://images.unsplash.com/photo-1519681393784-d120267933ba?ixid=MXwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHw%3D&ixlib=rb-1.2.1&auto=format&fit=crop&w=750&q=80", i.getImageOriginalName(),i.getFilterType()));
+                // System.out.printf("%s\n",workingDirectoryPath + File.separator + "images" + File.separator + this.user.getId() + File.separator + "original" + File.separator + i.getImageOriginalName());
+                // System.out.printf("%s\n",workingDirectoryPath + File.separator + "images" + File.separator + this.user.getId() + File.separator + "generated" + File.separator + i.getImageNewName());
+                imageContainer.add(new GalleryViewCard(i));
             }
         }
     }
