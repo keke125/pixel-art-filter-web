@@ -1,61 +1,66 @@
-# Pixel-Art-Filter-Web
+# Pixel Art Filter Web
 
-This project can be used as a starting point to create your own Vaadin application with Spring Boot.
-It contains all the necessary configuration and some placeholder files to get you started.
+本專案使用Spring Boot及Vaadin框架，為 Pixel Art Filter 的 java 網頁版本
 
-## Running the application
+提供使用者上傳圖片、設定轉換參數、生成轉換後的圖片功能，使用者也可查看之前生成過的圖片，下載喜歡的圖片，在網頁方便的與原圖進行比較，如果有喜歡的照片，也可透過分享功能分享給他人
 
-The project is a standard Maven project. To run it from the command line,
-type `mvnw` (Windows), or `./mvnw` (Mac & Linux), then open
-http://localhost:8080 in your browser.
+此外我們目前提供中英語言，未來可透過加入新的語言配置檔增加支持的語言
 
-You can also import the project to your IDE of choice as you would with any
-Maven project. Read more on [how to import Vaadin projects to different IDEs](https://vaadin.com/docs/latest/guide/step-by-step/importing) (Eclipse, IntelliJ IDEA, NetBeans, and VS Code).
+順應潮流，我們也提供了暗黑模式，可以依據使用者喜好自行切換
 
-## Deploying to Production
+## 如何從源碼構建並部屬
 
-To create a production build, call `mvnw clean package -Pproduction` (Windows),
-or `./mvnw clean package -Pproduction` (Mac & Linux).
-This will build a JAR file with all the dependencies and front-end resources,
-ready to be deployed. The file can be found in the `target` folder after the build completes.
+本專案為 Maven 專案，使用者將源代碼下載後，指令可參考 `git clone git@github.com:keke125/pixel-art-filter-web.git`
+，可透過在命令行輸入 `mvnw clean package -Pproduction` (Windows) 或 `./mvnw clean package -Pproduction` (Mac & Linux)
+,此時將在 `target` 目錄下生成 JAR 檔案，接著將生成後的 JAR
+檔案放到自訂的資料夾，並在該資料夾下執行 `java -jar target/pixel-art-filter-web-1.0-SNAPSHOT.jar`
+，接著請在瀏覽器開啟 http://localhost:8080
 
-Once the JAR file is built, you can run it using
-`java -jar target/pixel-art-filter-web-1.0-SNAPSHOT.jar`
+如果想將檔案導入IDE，你也可以參考 [how to import Vaadin projects to different IDEs](https://vaadin.com/docs/latest/guide/step-by-step/importing) (
+Eclipse, IntelliJ IDEA, NetBeans, and VS Code).
 
-## Project structure
+本專案使用 IntelliJ IDEA 開發
 
-- `MainLayout.java` in `src/main/java` contains the navigation setup (i.e., the
-  side/top bar and the main menu). This setup uses
-  [App Layout](https://vaadin.com/docs/components/app-layout).
-- `views` package in `src/main/java` contains the server-side Java views of your application.
-- `views` folder in `frontend/` contains the client-side JavaScript views of your application.
-- `themes` folder in `frontend/` contains the custom CSS styles.
+另外有兩件事是一定要注意的
 
-## Useful links
+- 資料庫
+- OpenCV 的導入
 
-- Read the documentation at [vaadin.com/docs](https://vaadin.com/docs).
-- Follow the tutorial at [vaadin.com/docs/latest/tutorial/overview](https://vaadin.com/docs/latest/tutorial/overview).
-- Create new projects at [start.vaadin.com](https://start.vaadin.com/).
-- Search UI components and their usage examples at [vaadin.com/docs/latest/components](https://vaadin.com/docs/latest/components).
-- View use case applications that demonstrate Vaadin capabilities at [vaadin.com/examples-and-demos](https://vaadin.com/examples-and-demos).
-- Build any UI without custom CSS by discovering Vaadin's set of [CSS utility classes](https://vaadin.com/docs/styling/lumo/utility-classes). 
-- Find a collection of solutions to common use cases at [cookbook.vaadin.com](https://cookbook.vaadin.com/).
-- Find add-ons at [vaadin.com/directory](https://vaadin.com/directory).
-- Ask questions on [Stack Overflow](https://stackoverflow.com/questions/tagged/vaadin) or join our [Discord channel](https://discord.gg/MYFq5RTbBn).
-- Report issues, create pull requests in [GitHub](https://github.com/vaadin).
+## 資料庫
 
+本專案使用 MariaDB，原則上你可方便的更改成你慣用的資料庫，請參考 Spring Data JPA 相關設定
 
-## Deploying using Docker
+為了使應用程式能夠持久儲存資料，請新增可連結的資料庫，可參考以下指令
 
-To build the Dockerized version of the project, run
-
-```
-mvn clean package -Pproduction
-docker build . -t pixel-art-filter-web:latest
+```mysql
+CREATE DATABASE newdatabase CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci;
+CREATE USER 'newdatabaseuser'@'localhost' IDENTIFIED BY 'password';
+GRANT ALL PRIVILEGES ON newdatabase.* TO 'newdatabaseuser'@'localhost';
+FLUSH PRIVILEGES;
 ```
 
-Once the Docker image is correctly built, you can test it locally using
+資料庫設定後，請設定環境變數
 
-```
-docker run -p 8080:8080 pixel-art-filter-web:latest
-```
+- PAFW_DB_URL
+- PAFW_DB_USER
+- PAFW_DB_PASSWORD
+
+範例
+
+PAFW_DB_URL `jdbc:mariadb://localhost:3306/pafw` 其中 pafw 為資料庫名稱
+
+## OpenCV 的導入
+
+OpenCV 根據作業系統，CPU架構的不同，會需要不同的檔案
+
+### 開發環境
+
+請在 IDE 設定 OpenCV 為外部函式庫
+
+### 生產環境
+
+在 Windows 下需要 .dll 檔，如果在放置 JAR 檔的資料夾內沒有放置相應的 .dll 檔 (x86/x64)，將導致錯誤
+
+## Docker
+
+TODO
