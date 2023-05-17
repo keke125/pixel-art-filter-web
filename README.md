@@ -11,7 +11,7 @@
 ## 如何從源碼構建並部屬
 
 本專案為 Maven 專案，使用者將源代碼下載後，指令可參考 `git clone git@github.com:keke125/pixel-art-filter-web.git`
-，可透過在命令行輸入 `mvnw clean package -Pproduction` (Windows) 或 `./mvnw clean package -Pproduction` (Mac & Linux)
+，可透過在命令行輸入 `mvnw clean package -Pproduction` (Windows) 或 `./mvnw clean package -Pproduction` `sudo chmod +x mvnw` (Mac & Linux)
 ,此時將在 `target` 目錄下生成 JAR 檔案，接著將生成後的 JAR
 檔案放到自訂的資料夾，並在該資料夾下執行 `java -jar target/pixel-art-filter-web-1.0-SNAPSHOT.jar`
 ，接著請在瀏覽器開啟 http://localhost:8080
@@ -52,6 +52,12 @@ PAFW_DB_URL `jdbc:mariadb://localhost:3306/pafw` 其中 pafw 為資料庫名稱
 ## OpenCV 的導入
 
 OpenCV 根據作業系統，CPU架構的不同，會需要不同的檔案
+
+Linux may need compile, there are two files you need. One is opencv-460.jar, the other is libopencv_java460.so
+
+```bash
+mvn install:install-file -Dfile=/path/to/opencv/jarfile -DgroupId=org -DartifactId=opencv -Dversion=4.6.0 -Dpackaging=jar
+```
 
 ### 開發環境
 
