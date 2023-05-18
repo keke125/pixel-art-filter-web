@@ -8,6 +8,7 @@ import com.vaadin.flow.data.binder.Binder;
 import com.vaadin.flow.data.binder.ValidationException;
 import org.apache.commons.codec.digest.DigestUtils;
 import org.apache.commons.io.FilenameUtils;
+import org.apache.tika.Tika;
 import org.opencv.core.Core;
 import org.opencv.core.Mat;
 import org.opencv.imgcodecs.Imgcodecs;
@@ -17,6 +18,8 @@ import java.io.File;
 import java.nio.file.Path;
 import java.time.Instant;
 import java.util.List;
+
+import static com.keke125.pixel.core.Util.acceptedImageFormat;
 
 @Service
 public class ImageService {
@@ -96,10 +99,18 @@ public class ImageService {
         String newFileName = instantNow + "-" + entity.getUploadImageName();
         String newFileNameHashed = DigestUtils.sha256Hex(newFileName);
         newFileNameHashed = newFileNameHashed.substring(0, 8);
-        String newFileFullName = newFileNameHashed + "." + FilenameUtils.getExtension(entity.getImageOriginalName());
         // PixelTransform
         File generatedImageDirectoryFile = new File(workingDirectoryPath.toAbsolutePath() + File.separator + "images" + File.separator + user.getId() + File.separator + "generated");
+        Tika tika = new Tika();
+        String mimeType = null;
+        mimeType = tika.detect(entity.getImageOriginalFile());
         File newFile;
+        String newFileFullName;
+        if (acceptedImageFormat.contains(mimeType)) {
+            newFileFullName = newFileNameHashed + "." + FilenameUtils.getExtension(entity.getImageOriginalName());
+        } else {
+            newFileFullName = newFileNameHashed + "." + "jpg";
+        }
         if (generatedImageDirectoryFile.mkdirs() || generatedImageDirectoryFile.exists()) {
             newFile = new File(generatedImageDirectoryFile.toPath().resolve(newFileFullName).toAbsolutePath().toString());
         } else {

@@ -22,6 +22,7 @@ import com.vaadin.flow.theme.lumo.LumoUtility.Margin;
 import com.vaadin.flow.theme.lumo.LumoUtility.Overflow;
 import com.vaadin.flow.theme.lumo.LumoUtility.Padding;
 import com.vaadin.flow.theme.lumo.LumoUtility.Width;
+import org.apache.commons.io.FilenameUtils;
 
 import java.io.ByteArrayInputStream;
 import java.io.File;
@@ -43,13 +44,23 @@ public class GalleryViewCard extends ListItem {
         File generatedFile = new File(imageInfo.getImageNewFile());
         // create stream resource from image file bytes
         StreamResource generatedResource;
-        generatedResource = new StreamResource("generated-" + imageInfo.getUploadImageName(), () -> {
-            try {
-                return new ByteArrayInputStream(Files.readAllBytes(generatedFile.toPath()));
-            } catch (IOException e) {
-                throw new RuntimeException(e);
-            }
-        });
+        if (!FilenameUtils.getExtension(imageInfo.getUploadImageName()).equals(FilenameUtils.getExtension(generatedFile.getName()))) {
+            generatedResource = new StreamResource("generated-" + FilenameUtils.removeExtension(imageInfo.getUploadImageName()) + ".jpg", () -> {
+                try {
+                    return new ByteArrayInputStream(Files.readAllBytes(generatedFile.toPath()));
+                } catch (IOException e) {
+                    throw new RuntimeException(e);
+                }
+            });
+        } else {
+            generatedResource = new StreamResource("generated-" + imageInfo.getUploadImageName(), () -> {
+                try {
+                    return new ByteArrayInputStream(Files.readAllBytes(generatedFile.toPath()));
+                } catch (IOException e) {
+                    throw new RuntimeException(e);
+                }
+            });
+        }
         // read generated image
         File originalFile = new File(imageInfo.getImageOriginalFile());
         // create stream resource from image file bytes
