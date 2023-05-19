@@ -14,6 +14,7 @@ import com.vaadin.flow.component.UI;
 import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.button.ButtonVariant;
 import com.vaadin.flow.component.checkbox.Checkbox;
+import com.vaadin.flow.component.confirmdialog.ConfirmDialog;
 import com.vaadin.flow.component.dependency.Uses;
 import com.vaadin.flow.component.formlayout.FormLayout;
 import com.vaadin.flow.component.html.*;
@@ -32,6 +33,8 @@ import com.vaadin.flow.data.binder.ValidationException;
 import com.vaadin.flow.dom.DomEventListener;
 import com.vaadin.flow.i18n.LocaleChangeEvent;
 import com.vaadin.flow.i18n.LocaleChangeObserver;
+import com.vaadin.flow.router.BeforeLeaveEvent;
+import com.vaadin.flow.router.BeforeLeaveObserver;
 import com.vaadin.flow.router.PageTitle;
 import com.vaadin.flow.router.Route;
 import jakarta.annotation.security.RolesAllowed;
@@ -53,7 +56,7 @@ import java.util.Optional;
 @Route(value = "pixel-transform", layout = MainLayout.class)
 @RolesAllowed("USER")
 @Uses(Icon.class)
-public class PixelTransformView extends Div implements LocaleChangeObserver {
+public class PixelTransformView extends Div implements LocaleChangeObserver, BeforeLeaveObserver {
 
     // i18n provider
     private static final Translator translator = new Translator();
@@ -86,11 +89,13 @@ public class PixelTransformView extends Div implements LocaleChangeObserver {
     private UserService userService;
 
     private User user;
+    private boolean isSaved;
 
     public PixelTransformView(ImageInfoService imageInfoService, AuthenticatedUser authenticatedUser, UserService userService, ImageService imageService) {
         this.imageInfoService = imageInfoService;
         this.authenticatedUser = authenticatedUser;
         this.userService = userService;
+        this.isSaved = false;
         binderUser = new BeanValidationBinder<>(User.class);
         addClassName("pixel-transform-view");
 
@@ -103,7 +108,11 @@ public class PixelTransformView extends Div implements LocaleChangeObserver {
         //binder.bindInstanceFields(this);
         clearForm();
 
-        cancel.addClickListener(e -> clearForm());
+        cancel.addClickListener(e -> {
+                    clearForm();
+                    isSaved = false;
+                }
+        );
         save.addClickListener(e -> {
             if (!imageFileMap.isEmpty()) {
                 double imageFileSize = 0.0;
@@ -140,6 +149,7 @@ public class PixelTransformView extends Div implements LocaleChangeObserver {
             } else {
                 Notification.show("沒有上傳圖片或重複上傳圖片");
             }
+            isSaved = true;
             clearForm();
         });
     }
@@ -415,6 +425,36 @@ public class PixelTransformView extends Div implements LocaleChangeObserver {
         return buttonLayout;
     }
 
+    @Override
+    public void beforeLeave(BeforeLeaveEvent beforeLeaveEvent) {
+        BeforeLeaveEvent.ContinueNavigationAction action =
+                beforeLeaveEvent.postpone();
+        ConfirmDialog confirmDialog = new ConfirmDialog();
+        confirmDialog.setText("尚未儲存圖片及參數，是否離開?");
+        confirmDialog.setCancelable(true);
+        confirmDialog.setCancelText("留在此頁");
+        confirmDialog.setConfirmText("確認離開");
+        confirmDialog.addConfirmListener(e -> {
+                    for (String s : imageFileMap.keySet()) {
+                        if (imageFileMap.get(s).delete()) {
+                            System.out.printf("Unsaved image %s have been deleted.%n", s);
+                        } else {
+                            System.out.printf("Failed to delete image %s.%n", s);
+                        }
+
+                        imageFileMap.clear();
+                    }
+                    action.proceed();
+                }
+        );
+        if (!isSaved && !imageFileMap.isEmpty()) {
+            confirmDialog.open();
+        } else {
+            confirmDialog.close();
+            action.proceed();
+        }
+    }
+
     public enum Smooth {
         NoneEN(0, "None"), WeakEN(50, "Weak"), MediumEN(100, "Medium"), StrongEN(200, "Strong"), NoneTC(0, "無"), WeakTC(50, "弱"), MediumTC(100, "中"), StrongTC(200, "強");
         final Integer value;
@@ -541,4 +581,6 @@ public class PixelTransformView extends Div implements LocaleChangeObserver {
                     "PB", "EB", "ZB", "YB")));
         }
     }
+
+
 }
