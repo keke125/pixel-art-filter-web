@@ -427,31 +427,28 @@ public class PixelTransformView extends Div implements LocaleChangeObserver, Bef
 
     @Override
     public void beforeLeave(BeforeLeaveEvent beforeLeaveEvent) {
-        BeforeLeaveEvent.ContinueNavigationAction action =
-                beforeLeaveEvent.postpone();
-        ConfirmDialog confirmDialog = new ConfirmDialog();
-        confirmDialog.setText("尚未儲存圖片及參數，是否離開?");
-        confirmDialog.setCancelable(true);
-        confirmDialog.setCancelText("留在此頁");
-        confirmDialog.setConfirmText("確認離開");
-        confirmDialog.addConfirmListener(e -> {
-                    for (String s : imageFileMap.keySet()) {
-                        if (imageFileMap.get(s).delete()) {
-                            System.out.printf("Unsaved image %s have been deleted.%n", s);
-                        } else {
-                            System.out.printf("Failed to delete image %s.%n", s);
-                        }
-
-                        imageFileMap.clear();
-                    }
-                    action.proceed();
-                }
-        );
         if (!isSaved && !imageFileMap.isEmpty()) {
+            BeforeLeaveEvent.ContinueNavigationAction action =
+                    beforeLeaveEvent.postpone();
+            ConfirmDialog confirmDialog = new ConfirmDialog();
+            confirmDialog.setText("尚未儲存圖片及參數，是否離開?");
+            confirmDialog.setCancelable(true);
+            confirmDialog.setCancelText("留在此頁");
+            confirmDialog.setConfirmText("確認離開");
+            confirmDialog.setCancelable(true);
+            confirmDialog.addConfirmListener(e -> {
+                        for (String s : imageFileMap.keySet()) {
+                            if (imageFileMap.get(s).delete()) {
+                                System.out.printf("Unsaved image %s have been deleted.%n", s);
+                            } else {
+                                System.out.printf("Failed to delete image %s.%n", s);
+                            }
+                            imageFileMap.clear();
+                        }
+                        action.proceed();
+                    }
+            );
             confirmDialog.open();
-        } else {
-            confirmDialog.close();
-            action.proceed();
         }
     }
 
