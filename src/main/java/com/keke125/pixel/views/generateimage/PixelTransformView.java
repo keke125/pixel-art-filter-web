@@ -107,7 +107,6 @@ public class PixelTransformView extends Div implements LocaleChangeObserver, Bef
         add(createUploadLayout());
         add(createButtonLayout());
 
-        //binder.bindInstanceFields(this);
         clearForm();
 
         cancel.addClickListener(e -> {
@@ -267,17 +266,26 @@ public class PixelTransformView extends Div implements LocaleChangeObserver, Bef
                     Optional<User> maybeUser = authenticatedUser.get();
                     if (maybeUser.isPresent()) {
                         this.user = maybeUser.get();
+                        if (!user.isEnabled()) {
+                            authenticatedUser.logout();
+                            if (savedFileData.getFile().delete()) {
+                                System.out.printf("Tmp File has been deleted from %s.\n", absolutePath);
+                            } else {
+                                System.err.printf("Tmp File has not been deleted from %s.\n", absolutePath);
+                            }
+                            return;
+                        }
                         if ((this.user.getImageSize() + (double) savedFileData.getFile().length() / 1024 / 1024) < this.user.getImageSizeLimit()) {
-                            System.out.printf("Tmp File saved to: %s.%n", absolutePath);
+                            System.out.printf("Tmp File saved to: %s.\n", absolutePath);
                         } else {
                             String errorMessage = String.format("因為儲存空間不足，上傳檔案 %s 失敗", uploadFileName);
                             Notification notification = Notification.show(errorMessage, 5000,
                                     Notification.Position.BOTTOM_CENTER);
                             notification.addThemeVariants(NotificationVariant.LUMO_ERROR);
                             if (savedFileData.getFile().delete()) {
-                                System.out.printf("Tmp File has been deleted from %s.%n", absolutePath);
+                                System.out.printf("Tmp File has been deleted from %s.\n", absolutePath);
                             } else {
-                                System.out.printf("Tmp File has not been deleted from %s.%n", absolutePath);
+                                System.err.printf("Tmp File has not been deleted from %s.\n", absolutePath);
                             }
                             return;
                         }
@@ -288,9 +296,9 @@ public class PixelTransformView extends Div implements LocaleChangeObserver, Bef
                             Notification.Position.BOTTOM_CENTER);
                     notification.addThemeVariants(NotificationVariant.LUMO_ERROR);
                     if (savedFileData.getFile().delete()) {
-                        System.out.printf("Tmp File has been deleted from %s.%n", absolutePath);
+                        System.out.printf("Tmp File has been deleted from %s.\n", absolutePath);
                     } else {
-                        System.out.printf("Tmp File has not been deleted from %s.%n", absolutePath);
+                        System.err.printf("Tmp File has not been deleted from %s.\n", absolutePath);
                     }
                     return;
                 }
@@ -300,9 +308,9 @@ public class PixelTransformView extends Div implements LocaleChangeObserver, Bef
                         Notification.Position.BOTTOM_CENTER);
                 notification.addThemeVariants(NotificationVariant.LUMO_ERROR);
                 if (savedFileData.getFile().delete()) {
-                    System.out.printf("Tmp File has been deleted from %s.%n", absolutePath);
+                    System.out.printf("Tmp File has been deleted from %s.\n", absolutePath);
                 } else {
-                    System.out.printf("Tmp File has not been deleted from %s.%n", absolutePath);
+                    System.err.printf("Tmp File has not been deleted from %s.\n", absolutePath);
                 }
                 return;
             }
@@ -318,24 +326,24 @@ public class PixelTransformView extends Div implements LocaleChangeObserver, Bef
             // check if image folder exists
             if (!imageDirectoryFile.exists()) {
                 if (imageDirectoryFile.mkdirs()) {
-                    System.out.printf("Folder %s has been created.%n", imageDirectoryFile.getAbsolutePath());
+                    System.out.printf("Folder %s has been created.\n", imageDirectoryFile.getAbsolutePath());
                 } else {
-                    System.out.printf("Failed to create Folder %s.%n", imageDirectoryFile.getAbsolutePath());
+                    System.err.printf("Failed to create Folder %s.\n", imageDirectoryFile.getAbsolutePath());
                     if (savedFileData.getFile().delete()) {
-                        System.out.printf("Tmp File has been deleted from %s.%n", absolutePath);
+                        System.out.printf("Tmp File has been deleted from %s.\n", absolutePath);
                     } else {
-                        System.out.printf("Tmp File has not been deleted from %s.%n", absolutePath);
+                        System.err.printf("Tmp File has not been deleted from %s.\n", absolutePath);
                     }
                     return;
                 }
             }
             // check image folder privilege
             if (!(imageDirectoryFile.canRead() && imageDirectoryFile.canWrite())) {
-                System.out.printf("Don't have privilege to write and read folder %s%n", imageDirectoryFile.getAbsolutePath());
+                System.out.printf("Don't have privilege to write and read folder %s.\n", imageDirectoryFile.getAbsolutePath());
                 if (savedFileData.getFile().delete()) {
-                    System.out.printf("Tmp File has been deleted from %s.%n", absolutePath);
+                    System.out.printf("Tmp File has been deleted from %s.\n", absolutePath);
                 } else {
-                    System.out.printf("Tmp File has not been deleted from %s.%n", absolutePath);
+                    System.err.printf("Tmp File has not been deleted from %s.\n", absolutePath);
                 }
                 return;
             }
@@ -355,20 +363,20 @@ public class PixelTransformView extends Div implements LocaleChangeObserver, Bef
                                 Notification.Position.BOTTOM_CENTER);
                         notification.addThemeVariants(NotificationVariant.LUMO_ERROR);
                         if (imageDirectoryFile.toPath().resolve(newFileFullName).toFile().delete()) {
-                            System.out.printf("Removed duplicate file from %s.%n", imageDirectoryFile.toPath().resolve(newFileFullName).toAbsolutePath());
+                            System.out.printf("Removed duplicate file from %s.\n", imageDirectoryFile.toPath().resolve(newFileFullName).toAbsolutePath());
                         } else {
-                            System.out.printf("Failed to remove duplicate file from %s.%n", imageDirectoryFile.toPath().resolve(newFileFullName).toAbsolutePath());
+                            System.err.printf("Failed to remove duplicate file from %s.\n", imageDirectoryFile.toPath().resolve(newFileFullName).toAbsolutePath());
                         }
                         return;
                     }
                 } catch (IOException e) {
                     throw new RuntimeException(e);
                 }
-                System.out.printf("Saved New file %s from %s.%n", imageDirectoryFile.toPath().resolve(newFileFullName).toAbsolutePath(), savedFileData.getFile().toPath().toAbsolutePath());
+                System.out.printf("Saved New file %s from %s.\n", imageDirectoryFile.toPath().resolve(newFileFullName).toAbsolutePath(), savedFileData.getFile().toPath().toAbsolutePath());
                 if (savedFileData.getFile().delete()) {
-                    System.out.printf("Removed tmp file from %s.%n", absolutePath);
+                    System.out.printf("Removed tmp file from %s.\n", absolutePath);
                 } else {
-                    System.out.printf("Failed to remove tmp file from %s.%n", absolutePath);
+                    System.err.printf("Failed to remove tmp file from %s.\n", absolutePath);
                 }
             }
         });
@@ -379,7 +387,7 @@ public class PixelTransformView extends Div implements LocaleChangeObserver, Bef
                 if (removedFile.delete()) {
                     System.out.println("Removed file " + removedFileName + " by user");
                 } else {
-                    System.out.println("Failed to remove file " + removedFileName + " by user");
+                    System.err.println("Failed to remove file " + removedFileName + " by user");
                 }
                 imageFileMap.remove(removedFileName);
             }
@@ -438,9 +446,9 @@ public class PixelTransformView extends Div implements LocaleChangeObserver, Bef
             confirmDialog.addConfirmListener(e -> {
                         for (String s : imageFileMap.keySet()) {
                             if (imageFileMap.get(s).delete()) {
-                                System.out.printf("Unsaved image %s have been deleted.%n", s);
+                                System.out.printf("Unsaved image %s have been deleted.\n", s);
                             } else {
-                                System.out.printf("Failed to delete image %s.%n", s);
+                                System.err.printf("Failed to delete image %s.\n", s);
                             }
                             imageFileMap.clear();
                         }

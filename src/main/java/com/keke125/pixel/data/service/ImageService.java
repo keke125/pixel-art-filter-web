@@ -23,47 +23,22 @@ import static com.keke125.pixel.core.Util.acceptedImageFormat;
 
 @Service
 public class ImageService {
-    private final UserRepository userRepository;
     private final ImageInfoRepository imageInfoRepository;
 
     private final ImageInfoService imageInfoService;
 
-    // binder with Class SampleImage
+    // binder with Class ImageInfo
     private final Binder<ImageInfo> binderImage = new Binder<>(ImageInfo.class);
 
-    public ImageService(UserRepository userRepository, ImageInfoRepository imageInfoRepository, ImageInfoService imageInfoService) {
-        this.userRepository = userRepository;
+    public ImageService(ImageInfoRepository imageInfoRepository, ImageInfoService imageInfoService) {
+        // this.userRepository = userRepository;
         this.imageInfoRepository = imageInfoRepository;
         this.imageInfoService = imageInfoService;
     }
 
-    public List<User> findAllUsers(String username) {
-        if (username == null || username.isEmpty()) {
-            return userRepository.findAll();
-        } else {
-            return userRepository.findAllByUsername(username);
-        }
-    }
-
-    public long countUsers() {
-        return userRepository.count();
-    }
-
-    public void deleteUser(User user) {
-        userRepository.delete(user);
-    }
-
-    public void saveUser(User user) {
-        if (user == null) {
-            System.out.println("User is null. Are you sure you have connected your form to the application?");
-            return;
-        }
-        userRepository.save(user);
-    }
-
     public List<ImageInfo> findAllImageInfosByOwnerName(String OwnerName) {
         if (OwnerName == null || OwnerName.isEmpty()) {
-            return imageInfoRepository.findAll();
+            return null;
         } else {
             return imageInfoRepository.findAllByOwnerName(OwnerName);
         }
@@ -73,21 +48,20 @@ public class ImageService {
         return imageInfoRepository.count();
     }
 
-    public long countImageInfosByOwnerName(String OwnerName) {
-        return imageInfoRepository.count();
+    public long countImageInfosByOwnerName(String ownerName) {
+        return imageInfoRepository.countByOwnerName(ownerName);
     }
 
-    public void deleteImageInfo(ImageInfo imageInfo) {
-        imageInfoRepository.delete(imageInfo);
-    }
-
-    public void saveImageInfo(ImageInfo imageInfo) {
-        if (imageInfo == null) {
-            System.out.println("ImageInfo is null. Are you sure you have connected your form to the application?");
-            return;
+    public void deleteImageInfo(ImageInfo imageInfo) throws RuntimeException {
+        File originalFile = new File(imageInfo.getImageOriginalFile());
+        File newFile = new File(imageInfo.getImageNewFile());
+        if (originalFile.delete() && newFile.delete()) {
+            imageInfoRepository.delete(imageInfo);
+        } else {
+            throw new RuntimeException("Can't delete images!");
         }
-        imageInfoRepository.save(imageInfo);
     }
+
 
     public void imageProcess(ImageInfo entity, User user) {
         System.loadLibrary(Core.NATIVE_LIBRARY_NAME);

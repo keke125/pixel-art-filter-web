@@ -1,7 +1,11 @@
 package com.keke125.pixel.data.service;
 
+import com.keke125.pixel.data.entity.ImageInfo;
 import com.keke125.pixel.data.entity.User;
+
+import java.util.List;
 import java.util.Optional;
+
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.domain.Specification;
@@ -12,11 +16,13 @@ import org.springframework.stereotype.Service;
 public class UserService {
 
     private final UserRepository repository;
+    private final ImageService imageService;
 
     private final PasswordEncoder passwordEncoder;
 
-    public UserService(UserRepository repository, PasswordEncoder passwordEncoder) {
+    public UserService(UserRepository repository, ImageService imageService, PasswordEncoder passwordEncoder) {
         this.repository = repository;
+        this.imageService = imageService;
         this.passwordEncoder = passwordEncoder;
     }
 
@@ -29,7 +35,20 @@ public class UserService {
     }
 
     public void delete(Long id) {
-        repository.deleteById(id);
+        Optional<User> user = repository.findById(id);
+        if (user.isPresent()) {
+            List<ImageInfo> imageInfoList = imageService.findAllImageInfosByOwnerName(user.get().getUsername());
+            if (!imageInfoList.isEmpty()) {
+                try {
+                    for (ImageInfo imageInfo : imageInfoList) {
+                        imageService.deleteImageInfo(imageInfo);
+                    }
+                } catch (RuntimeException e) {
+                    System.err.printf("Can't delete user's (ID: %d) images!", user.get().getId());
+                }
+            }
+            repository.deleteById(id);
+        }
     }
 
     public Page<User> list(Pageable pageable) {
@@ -60,13 +79,4 @@ public class UserService {
         return !repository.findAllByEmail(email).isEmpty();
     }
 
-    /**
-     * Utility Exception class that we can use in the frontend to show that
-     * something went wrong during save.
-     */
-    public static class ServiceException extends Exception {
-        public ServiceException(String msg) {
-            super(msg);
-        }
-    }
 }

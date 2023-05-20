@@ -49,8 +49,10 @@ public class GalleryView extends Main implements HasComponents, HasStyle {
         if (maybeUser.isPresent()) {
             this.user = maybeUser.get();
             List<ImageInfo> imageInfoList = imageService.findAllImageInfosByOwnerName(this.user.getUsername());
-            for (ImageInfo i : imageInfoList) {
-                imageContainer.add(new GalleryViewCard(i));
+            if (!imageInfoList.isEmpty()) {
+                for (ImageInfo i : imageInfoList) {
+                    imageContainer.add(new GalleryViewCard(i));
+                }
             }
         }
     }

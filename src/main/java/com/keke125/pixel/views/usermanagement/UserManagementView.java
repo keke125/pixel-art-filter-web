@@ -59,7 +59,7 @@ public class UserManagementView extends Div implements BeforeEnterObserver {
 
     private final Button cancel = new Button("Cancel");
     private final Button save = new Button("Save");
-
+    private final Button delete = new Button("Delete");
     private final BeanValidationBinder<User> binder;
     private final UserService userService;
     private User user;
@@ -148,6 +148,17 @@ public class UserManagementView extends Div implements BeforeEnterObserver {
                 Notification.show("Failed to update the data. Check again that all values are valid");
             }
         });
+
+        delete.addClickListener(e -> {
+            if (this.user != null) {
+                user.setImageSizeLimit(0.0);
+                userService.update(user);
+                userService.delete(user.getId());
+                Notification.show(String.format("已刪除使用者 ID: %d.\n", user.getId()));
+            } else {
+                System.err.println("User is null.\n");
+            }
+        });
     }
 
     @Override
@@ -198,7 +209,8 @@ public class UserManagementView extends Div implements BeforeEnterObserver {
         buttonLayout.setClassName("button-layout");
         cancel.addThemeVariants(ButtonVariant.LUMO_TERTIARY);
         save.addThemeVariants(ButtonVariant.LUMO_PRIMARY);
-        buttonLayout.add(save, cancel);
+        delete.addThemeVariants(ButtonVariant.LUMO_PRIMARY, ButtonVariant.LUMO_ERROR);
+        buttonLayout.add(save, cancel, delete);
         editorLayoutDiv.add(buttonLayout);
     }
 
@@ -226,7 +238,7 @@ public class UserManagementView extends Div implements BeforeEnterObserver {
 
     private ValidationResult duplicateUsernameValidator(String username, ValueContext ctx) {
 
-        if (userService.isUsernameNonExist(username)) {
+        if (userService.isUsernameNonExist(username) || username.equals(user.getUsername())) {
             return ValidationResult.ok();
         } else {
             return ValidationResult.error("The username has already been taken. Please try a different one.");
