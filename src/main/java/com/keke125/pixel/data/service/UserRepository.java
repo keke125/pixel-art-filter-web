@@ -17,4 +17,8 @@ public interface UserRepository extends JpaRepository<User, Long>, JpaSpecificat
     @Query("select u from User u " +
             "where u.username like  :username")
     List<User> findAllByUsername(@Param("username") String username);
+
+    @Query("select u from User u " +
+            "where u.email like  :email")
+    List<User> findAllByEmail(@Param("email") String email);
 }

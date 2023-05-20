@@ -47,8 +47,8 @@ public class MainLayout extends AppLayout implements LocaleChangeObserver {
 
     private H2 viewTitle;
 
-    private AuthenticatedUser authenticatedUser;
-    private AccessAnnotationChecker accessChecker;
+    private final AuthenticatedUser authenticatedUser;
+    private final AccessAnnotationChecker accessChecker;
 
     private static final Translator translator = new Translator();
     private final Select<Locale> selectLanguage = new Select<>();
@@ -174,9 +174,7 @@ public class MainLayout extends AppLayout implements LocaleChangeObserver {
             div.getElement().getStyle().set("align-items", "center");
             div.getElement().getStyle().set("gap", "var(--lumo-space-s)");
             userName.add(div);
-            userName.getSubMenu().addItem("登出", e -> {
-                authenticatedUser.logout();
-            });
+            userName.getSubMenu().addItem("登出", e -> authenticatedUser.logout());
 
             layout.add(userMenu);
         } else {

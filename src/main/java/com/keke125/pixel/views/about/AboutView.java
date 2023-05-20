@@ -16,7 +16,7 @@ import com.vaadin.flow.theme.lumo.LumoUtility.Margin;
 @AnonymousAllowed
 public class AboutView extends VerticalLayout {
 
-    private static Translator i18nProvider = new Translator();
+    private static final Translator i18nProvider = new Translator();
     private String title;
 
     public AboutView() {

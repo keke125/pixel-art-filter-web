@@ -29,7 +29,7 @@ public class ImageService {
     private final ImageInfoService imageInfoService;
 
     // binder with Class SampleImage
-    private Binder<ImageInfo> binderImage = new Binder<>(ImageInfo.class);
+    private final Binder<ImageInfo> binderImage = new Binder<>(ImageInfo.class);
 
     public ImageService(UserRepository userRepository, ImageInfoRepository imageInfoRepository, ImageInfoService imageInfoService) {
         this.userRepository = userRepository;
@@ -102,7 +102,7 @@ public class ImageService {
         // PixelTransform
         File generatedImageDirectoryFile = new File(workingDirectoryPath.toAbsolutePath() + File.separator + "images" + File.separator + user.getId() + File.separator + "generated");
         Tika tika = new Tika();
-        String mimeType = null;
+        String mimeType;
         mimeType = tika.detect(entity.getImageOriginalFile());
         File newFile;
         String newFileFullName;

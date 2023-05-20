@@ -18,7 +18,6 @@ public class ImageInfo extends AbstractEntity {
     private Integer edgeCrispening;
     private Integer saturation;
     private Integer contrastRatio;
-    private boolean isPublic;
     private String imageOriginalFile;
     private String imageNewFile;
     private String imageOriginalName;

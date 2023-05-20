@@ -1,6 +1,5 @@
 package com.keke125.pixel.views.usermanagement;
 
-import com.keke125.pixel.data.Role;
 import com.keke125.pixel.data.entity.User;
 import com.keke125.pixel.data.service.UserService;
 import com.keke125.pixel.views.MainLayout;
@@ -22,6 +21,8 @@ import com.vaadin.flow.component.splitlayout.SplitLayout;
 import com.vaadin.flow.component.textfield.TextField;
 import com.vaadin.flow.data.binder.BeanValidationBinder;
 import com.vaadin.flow.data.binder.ValidationException;
+import com.vaadin.flow.data.binder.ValidationResult;
+import com.vaadin.flow.data.binder.ValueContext;
 import com.vaadin.flow.data.converter.StringToDoubleConverter;
 import com.vaadin.flow.data.renderer.LitRenderer;
 import com.vaadin.flow.router.BeforeEnterEvent;
@@ -30,7 +31,9 @@ import com.vaadin.flow.router.PageTitle;
 import com.vaadin.flow.router.Route;
 import com.vaadin.flow.spring.data.VaadinSpringDataHelpers;
 import jakarta.annotation.security.RolesAllowed;
+
 import java.util.Optional;
+
 import org.springframework.data.domain.PageRequest;
 import org.springframework.orm.ObjectOptimisticLockingFailureException;
 
@@ -46,11 +49,13 @@ public class UserManagementView extends Div implements BeforeEnterObserver {
 
     private final Grid<User> grid = new Grid<>(User.class, false);
 
+    private TextField username;
     private TextField name;
     private TextField email;
     private Checkbox enabled;
     private Checkbox admin;
     private TextField imageSize;
+    private TextField imageSizeLimit;
 
     private final Button cancel = new Button("Cancel");
     private final Button save = new Button("Save");
@@ -72,6 +77,7 @@ public class UserManagementView extends Div implements BeforeEnterObserver {
         add(splitLayout);
 
         // Configure Grid
+        grid.addColumn("username").setAutoWidth(true);
         grid.addColumn("name").setAutoWidth(true);
         grid.addColumn("email").setAutoWidth(true);
         LitRenderer<User> enabledRenderer = LitRenderer.<User>of(
@@ -81,18 +87,18 @@ public class UserManagementView extends Div implements BeforeEnterObserver {
                                 ? "var(--lumo-primary-text-color)"
                                 : "var(--lumo-disabled-text-color)");
 
-        grid.addColumn(enabledRenderer).setHeader("Enabled").setAutoWidth(true);
 
         LitRenderer<User> adminRenderer = LitRenderer.<User>of(
                         "<vaadin-icon icon='vaadin:${item.icon}' style='width: var(--lumo-icon-size-s); height: var(--lumo-icon-size-s); color: ${item.color};'></vaadin-icon>")
-                .withProperty("icon", admin -> admin.getRoles().contains(Role.ADMIN) ? "check" : "minus").withProperty("color",
-                        admin -> admin.getRoles().contains(Role.ADMIN)
+                .withProperty("icon", admin -> admin.isAdmin() ? "check" : "minus").withProperty("color",
+                        admin -> admin.isAdmin()
                                 ? "var(--lumo-primary-text-color)"
                                 : "var(--lumo-disabled-text-color)");
-
+        grid.addColumn(enabledRenderer).setHeader("Enable").setAutoWidth(true);
         grid.addColumn(adminRenderer).setHeader("Admin").setAutoWidth(true);
-
         grid.addColumn("imageSize").setAutoWidth(true);
+        grid.addColumn("imageSizeLimit").setAutoWidth(true);
+
         grid.setItems(query -> userService.list(
                         PageRequest.of(query.getPage(), query.getPageSize(), VaadinSpringDataHelpers.toSpringDataSort(query)))
                 .stream());
@@ -113,6 +119,8 @@ public class UserManagementView extends Div implements BeforeEnterObserver {
 
         // Bind fields. This is where you'd define e.g. validation rules
         binder.forField(imageSize).withConverter(new StringToDoubleConverter("Only floats are allowed")).bind("imageSize");
+        binder.forField(imageSizeLimit).withConverter(new StringToDoubleConverter("Only integers are allowed")).bind("imageSizeLimit");
+        binder.forField(username).withValidator(this::duplicateUsernameValidator).bind("username");
         binder.bindInstanceFields(this);
 
         cancel.addClickListener(e -> {
@@ -169,12 +177,16 @@ public class UserManagementView extends Div implements BeforeEnterObserver {
         editorLayoutDiv.add(editorDiv);
 
         FormLayout formLayout = new FormLayout();
+        username = new TextField("Username");
         name = new TextField("Name");
         email = new TextField("Email");
         enabled = new Checkbox("Enabled");
         admin = new Checkbox("Admin");
+        // admin.setReadOnly(true);
         imageSize = new TextField("Image Size");
-        formLayout.add(name, email, enabled, admin, imageSize);
+        imageSize.setReadOnly(true);
+        imageSizeLimit = new TextField("Image Size Limit");
+        formLayout.add(username, name, email, enabled, admin, imageSize, imageSizeLimit);
 
         editorDiv.add(formLayout);
         createButtonLayout(editorLayoutDiv);
@@ -211,4 +223,14 @@ public class UserManagementView extends Div implements BeforeEnterObserver {
         binder.readBean(this.user);
 
     }
+
+    private ValidationResult duplicateUsernameValidator(String username, ValueContext ctx) {
+
+        if (userService.isUsernameNonExist(username)) {
+            return ValidationResult.ok();
+        } else {
+            return ValidationResult.error("The username has already been taken. Please try a different one.");
+        }
+    }
+
 }

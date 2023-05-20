@@ -9,13 +9,6 @@ import com.vaadin.flow.component.dependency.NpmPackage;
 import com.vaadin.flow.dom.Element;
 import java.util.Optional;
 
-/**
- * A navigation menu with support for hierarchical and flat menus.
- * <p>
- * Items can be added using {@link #addItem(AppNavItem)} and hierarchy can be
- * created by adding {@link AppNavItem} instances to other {@link AppNavItem}
- * instances.
- */
 @JsModule("@vaadin-component-factory/vcf-nav")
 @Tag("vcf-nav")
 @NpmPackage(value = "@vaadin-component-factory/vcf-nav", version = "1.0.6")

@@ -41,26 +41,26 @@ import java.util.Set;
 public class SignupView extends VerticalLayout {
 
     private static UserService service;
-    private PasswordField passwordField1;
-    private PasswordField passwordField2;
-    private BeanValidationBinder<User> binder;
-    private User newUser;
+    private final PasswordField passwordField1;
+    private final PasswordField passwordField2;
+    private final BeanValidationBinder<User> binder;
+    private final User newUser;
 
     /**
      * Flag for disabling first run for password validation
      */
     private boolean enablePasswordValidation;
 
-    private H3 title;
-    private TextField usernameField;
-    private TextField nameField;
-    private Upload upload;
-    private MemoryBuffer memoryBuffer;
-    private UploadTCI18N uploadTCI18N;
-    private UploadENI18N uploadENI18N;
-    private EmailField emailField;
-    private Span errorMessage;
-    private Button submitButton;
+    private final H3 title;
+    private final TextField usernameField;
+    private final TextField nameField;
+    private final Upload upload;
+    private final MemoryBuffer memoryBuffer;
+    private final UploadTCI18N uploadTCI18N;
+    private final UploadENI18N uploadENI18N;
+    private final EmailField emailField;
+    private final Span errorMessage;
+    private final Button submitButton;
 
     /**
      * We use Spring to inject the backend into our view
@@ -219,7 +219,7 @@ public class SignupView extends VerticalLayout {
         binder = new BeanValidationBinder<>(User.class);
 
         // Basic name fields that are required to fill in
-        binder.forField(usernameField).asRequired().withValidator(this::duplicateValidator).bind("username");
+        binder.forField(usernameField).asRequired().withValidator(this::duplicateUsernameValidator).bind("username");
         binder.forField(nameField).asRequired().bind("name");
 
         // EmailField uses a Validator that extends one of the built-in ones.
@@ -227,7 +227,7 @@ public class SignupView extends VerticalLayout {
         // 'withValidator(Validator)'; this method allows 'asRequired' to
         // be conditional instead of always on. We don't want to require the email if
         // the user declines marketing messages.
-        binder.forField(emailField).asRequired().withValidator(new EmailValidator("Value is not a valid email address")).bind("email");
+        binder.forField(emailField).asRequired().withValidator(new EmailValidator("Value is not a valid email address")).withValidator(this::duplicateEmailValidator).bind("email");
 
         // Another custom validator, this time for passwords
         binder.forField(passwordField1).asRequired().withValidator(this::passwordValidator).withConverter(new passwordConverter()).bind("hashedPassword");
@@ -336,12 +336,21 @@ public class SignupView extends VerticalLayout {
         return ValidationResult.error("Passwords do not match");
     }
 
-    private ValidationResult duplicateValidator(String username, ValueContext ctx) {
+    private ValidationResult duplicateUsernameValidator(String username, ValueContext ctx) {
 
-        if (!service.isUsernameExist(username)) {
+        if (service.isUsernameNonExist(username)) {
             return ValidationResult.ok();
         } else {
             return ValidationResult.error("The username has already been taken. Please try a different one.");
+        }
+    }
+
+    private ValidationResult duplicateEmailValidator(String email, ValueContext ctx) {
+
+        if (!service.isEmailExist(email)) {
+            return ValidationResult.ok();
+        } else {
+            return ValidationResult.error("The email has already been taken. Please try a different one.");
         }
     }
 

@@ -13,11 +13,13 @@ import com.vaadin.flow.component.Component;
 import com.vaadin.flow.component.UI;
 import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.button.ButtonVariant;
-import com.vaadin.flow.component.checkbox.Checkbox;
 import com.vaadin.flow.component.confirmdialog.ConfirmDialog;
 import com.vaadin.flow.component.dependency.Uses;
 import com.vaadin.flow.component.formlayout.FormLayout;
-import com.vaadin.flow.component.html.*;
+import com.vaadin.flow.component.html.Div;
+import com.vaadin.flow.component.html.H3;
+import com.vaadin.flow.component.html.Paragraph;
+import com.vaadin.flow.component.html.Span;
 import com.vaadin.flow.component.icon.Icon;
 import com.vaadin.flow.component.notification.Notification;
 import com.vaadin.flow.component.notification.NotificationVariant;
@@ -42,7 +44,8 @@ import org.apache.commons.codec.digest.DigestUtils;
 import org.apache.commons.io.FilenameUtils;
 import org.apache.tika.Tika;
 
-import java.io.*;
+import java.io.File;
+import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.StandardCopyOption;
@@ -61,32 +64,31 @@ public class PixelTransformView extends Div implements LocaleChangeObserver, Bef
     // i18n provider
     private static final Translator translator = new Translator();
     private final BeanValidationBinder<User> binderUser;
-    private Select<Integer> pixelSize = new Select<>();
+    private final Select<Integer> pixelSize = new Select<>();
     // data input field
-    private Select<Integer> colorNumber = new Select<>();
-    private Select<Smooth> smooth = new Select<>();
-    private Select<Integer> saturation = new Select<>();
-    private Select<Integer> contrastRatio = new Select<>();
-    private Checkbox isPublic = new Checkbox();
-    private Select<EdgeCrispening> edgeCrispening = new Select<>();
-    private Button save = new Button("儲存");
-    private Map<String, File> imageFileMap = new HashMap<>();
+    private final Select<Integer> colorNumber = new Select<>();
+    private final Select<Smooth> smooth = new Select<>();
+    private final Select<Integer> saturation = new Select<>();
+    private final Select<Integer> contrastRatio = new Select<>();
+    private final Select<EdgeCrispening> edgeCrispening = new Select<>();
+    private final Button save = new Button("儲存");
+    private final Map<String, File> imageFileMap = new HashMap<>();
     // binder with Class SampleImage
-    private Binder<ImageInfo> binderImage = new Binder<>(ImageInfo.class);
+    private final Binder<ImageInfo> binderImage = new Binder<>(ImageInfo.class);
     // button cancel and button save
-    private Button cancel = new Button();
+    private final Button cancel = new Button();
     // file buffer and upload
-    private MultiFileBuffer multiFileBuffer = new MultiFileBuffer();
-    private Upload multiFileUpload = new Upload(multiFileBuffer);
+    private final MultiFileBuffer multiFileBuffer = new MultiFileBuffer();
+    private final Upload multiFileUpload = new Upload(multiFileBuffer);
     // setup upload i18n
     private UploadTCI18N uploadTCI18N;
     private UploadENI18N uploadENI18N;
     // inject sample image service
-    private ImageInfoService imageInfoService;
+    private final ImageInfoService imageInfoService;
     private ImageInfo newImageInfo;
 
-    private AuthenticatedUser authenticatedUser;
-    private UserService userService;
+    private final AuthenticatedUser authenticatedUser;
+    private final UserService userService;
 
     private User user;
     private boolean isSaved;
@@ -122,7 +124,7 @@ public class PixelTransformView extends Div implements LocaleChangeObserver, Bef
                         this.user = maybeUser.get();
                         // check if file size achieve file size limit
                         if ((this.user.getImageSize() + (double) (entry.getValue().length() / 1024 / 1024)) < this.user.getImageSizeLimit()) {
-                            newImageInfo = new ImageInfo("Pixel Transform", colorNumber.getValue(), pixelSize.getValue(), smooth.getValue().getValue(), edgeCrispening.getValue().getValue(), saturation.getValue(), contrastRatio.getValue(), isPublic.getValue(), entry.getValue().getPath(), null, entry.getValue().getName(), null, this.user.getUsername(), entry.getKey());
+                            newImageInfo = new ImageInfo("Pixel Transform", colorNumber.getValue(), pixelSize.getValue(), smooth.getValue().getValue(), edgeCrispening.getValue().getValue(), saturation.getValue(), contrastRatio.getValue(), entry.getValue().getPath(), null, entry.getValue().getName(), null, this.user.getUsername(), entry.getKey());
                             imageService.imageProcess(newImageInfo, this.user);
                             try {
                                 binderImage.writeBean(newImageInfo);
@@ -172,7 +174,6 @@ public class PixelTransformView extends Div implements LocaleChangeObserver, Bef
         }
         saturation.setValue(0);
         contrastRatio.setValue(0);
-        isPublic.setValue(false);
     }
 
     private Component createTitle() {
@@ -213,10 +214,7 @@ public class PixelTransformView extends Div implements LocaleChangeObserver, Bef
         contrastRatio.setItems(-250, -200, -150, -100, -50, 0, 50, 100, 150, 200, 250);
         contrastRatio.setValue(0);
         contrastRatio.setTooltipText("Contrast Ratio can help to make an image appear more intense or have greater contrast.");
-        isPublic.setLabel("公開圖片");
-        isPublic.setValue(false);
-        isPublic.setTooltipText("By checking this box, the image after the pixel transform can be shared via a link.");
-        formLayout.add(colorNumber, pixelSize, smooth, edgeCrispening, saturation, contrastRatio, isPublic);
+        formLayout.add(colorNumber, pixelSize, smooth, edgeCrispening, saturation, contrastRatio);
         return formLayout;
 
     }
@@ -281,7 +279,6 @@ public class PixelTransformView extends Div implements LocaleChangeObserver, Bef
                             } else {
                                 System.out.printf("Tmp File has not been deleted from %s.%n", absolutePath);
                             }
-                            UI.getCurrent().getPage().reload();
                             return;
                         }
                     }
@@ -378,12 +375,14 @@ public class PixelTransformView extends Div implements LocaleChangeObserver, Bef
         multiFileUpload.getElement().addEventListener("file-remove", (DomEventListener) e -> {
             String removedFileName = e.getEventData().getString("event.detail.file.name");
             File removedFile = imageFileMap.get(removedFileName);
-            if (removedFile.delete()) {
-                System.out.println("Removed file " + removedFileName + " by user");
-            } else {
-                System.out.println("Failed to remove file " + removedFileName + " by user");
+            if (removedFile != null) {
+                if (removedFile.delete()) {
+                    System.out.println("Removed file " + removedFileName + " by user");
+                } else {
+                    System.out.println("Failed to remove file " + removedFileName + " by user");
+                }
+                imageFileMap.remove(removedFileName);
             }
-            imageFileMap.remove(removedFileName);
         }).addEventData("event.detail.file.name");
         // upload non image file (by file extension)
         multiFileUpload.addFileRejectedListener(event -> {

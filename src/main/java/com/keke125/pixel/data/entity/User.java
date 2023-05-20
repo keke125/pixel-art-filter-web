@@ -50,6 +50,7 @@ public class User extends AbstractEntity implements UserDetails {
     private String avatarImageName;
     @NotNull
     @Email
+    @Column(unique = true)
     private String email;
     private boolean enabled;
     private boolean isAccountNonExpired;
@@ -69,5 +70,25 @@ public class User extends AbstractEntity implements UserDetails {
     @Override
     public String getPassword() {
         return this.hashedPassword;
+    }
+
+    public boolean isAdmin() {
+        return roles.contains(Role.ADMIN);
+    }
+
+    public void setAdmin(boolean bool) {
+        if (!bool && isAdmin()) {
+            roles.remove(Role.ADMIN);
+        } else if (bool && !isAdmin()) {
+            roles.add(Role.ADMIN);
+        }
+    }
+
+    public @NotNull String getUsername() {
+        return username;
+    }
+
+    public void setUsernane(String username) {
+        this.username = username;
     }
 }

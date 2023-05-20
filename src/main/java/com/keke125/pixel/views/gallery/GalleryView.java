@@ -39,7 +39,7 @@ public class GalleryView extends Main implements HasComponents, HasStyle {
 
     private OrderedList imageContainer;
 
-    private AuthenticatedUser authenticatedUser;
+    private final AuthenticatedUser authenticatedUser;
     private User user;
 
     public GalleryView(ImageService imageService, AuthenticatedUser authenticatedUser) {

@@ -52,8 +52,12 @@ public class UserService {
         return passwordEncoder;
     }
 
-    public boolean isUsernameExist(String username) {
-        return repository.findByUsername(username) != null;
+    public boolean isUsernameNonExist(String username) {
+        return repository.findByUsername(username) == null;
+    }
+
+    public boolean isEmailExist(String email) {
+        return !repository.findAllByEmail(email).isEmpty();
     }
 
     /**

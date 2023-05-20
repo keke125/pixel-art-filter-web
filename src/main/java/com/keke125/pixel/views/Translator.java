@@ -17,9 +17,9 @@ public class Translator implements I18NProvider {
 
     public static final Locale English = new Locale("en");
 
-    private List<Locale> locales = List.of(English, LOCALE_ZHT);
+    private final List<Locale> locales = List.of(English, LOCALE_ZHT);
 
-    private Map<String, ResourceBundle> localeMap = new HashMap<>();
+    private final Map<String, ResourceBundle> localeMap = new HashMap<>();
 
     @Override
     public List<Locale> getProvidedLocales() {
