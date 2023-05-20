@@ -16,14 +16,16 @@ import org.springframework.stereotype.Service;
 public class UserService {
 
     private final UserRepository repository;
+    private final ImageInfoService imageInfoService;
     private final ImageService imageService;
 
     private final PasswordEncoder passwordEncoder;
 
-    public UserService(UserRepository repository, ImageService imageService, PasswordEncoder passwordEncoder) {
+    public UserService(UserRepository repository, ImageInfoService imageInfoService, PasswordEncoder passwordEncoder) {
         this.repository = repository;
-        this.imageService = imageService;
+        this.imageInfoService = imageInfoService;
         this.passwordEncoder = passwordEncoder;
+        this.imageService = new ImageService(imageInfoService.getRepository(), imageInfoService, this);
     }
 
     public Optional<User> get(Long id) {
@@ -35,16 +37,17 @@ public class UserService {
     }
 
     public void delete(Long id) {
-        Optional<User> user = repository.findById(id);
-        if (user.isPresent()) {
-            List<ImageInfo> imageInfoList = imageService.findAllImageInfosByOwnerName(user.get().getUsername());
+        Optional<User> maybeUser = repository.findById(id);
+        if (maybeUser.isPresent()) {
+            User user = maybeUser.get();
+            List<ImageInfo> imageInfoList = imageService.findAllImageInfosByOwnerName(user.getUsername());
             if (!imageInfoList.isEmpty()) {
                 try {
                     for (ImageInfo imageInfo : imageInfoList) {
-                        imageService.deleteImageInfo(imageInfo);
+                        imageService.deleteImageInfo(imageInfo, user);
                     }
                 } catch (RuntimeException e) {
-                    System.err.printf("Can't delete user's (ID: %d) images!", user.get().getId());
+                    System.err.printf("Can't delete user's (ID: %d) images!", user.getId());
                 }
             }
             repository.deleteById(id);

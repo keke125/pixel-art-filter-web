@@ -24,24 +24,18 @@ import static com.keke125.pixel.core.Util.acceptedImageFormat;
 @Service
 public class ImageService {
     private final ImageInfoRepository imageInfoRepository;
-
     private final ImageInfoService imageInfoService;
+    private final UserService userService;
 
     // binder with Class ImageInfo
     private final Binder<ImageInfo> binderImage = new Binder<>(ImageInfo.class);
+    private final Binder<User> binderUser = new Binder<>(User.class);
 
-    public ImageService(ImageInfoRepository imageInfoRepository, ImageInfoService imageInfoService) {
+    public ImageService(ImageInfoRepository imageInfoRepository, ImageInfoService imageInfoService, UserService userService) {
         // this.userRepository = userRepository;
         this.imageInfoRepository = imageInfoRepository;
         this.imageInfoService = imageInfoService;
-    }
-
-    public List<ImageInfo> findAllImageInfosByOwnerName(String OwnerName) {
-        if (OwnerName == null || OwnerName.isEmpty()) {
-            return null;
-        } else {
-            return imageInfoRepository.findAllByOwnerName(OwnerName);
-        }
+        this.userService = userService;
     }
 
     public long countImageInfos() {
@@ -52,10 +46,19 @@ public class ImageService {
         return imageInfoRepository.countByOwnerName(ownerName);
     }
 
-    public void deleteImageInfo(ImageInfo imageInfo) throws RuntimeException {
+    public void deleteImageInfo(ImageInfo imageInfo, User user) throws RuntimeException {
         File originalFile = new File(imageInfo.getImageOriginalFile());
         File newFile = new File(imageInfo.getImageNewFile());
+        Double oldUserImageSize = user.getImageSize();
+        Double originalFileSize = (double) originalFile.length() / 1024 / 1024;
         if (originalFile.delete() && newFile.delete()) {
+            try {
+                user.setImageSize(oldUserImageSize - originalFileSize);
+                binderUser.writeBean(user);
+                userService.update(user);
+            } catch (ValidationException e) {
+                throw new RuntimeException(e);
+            }
             imageInfoRepository.delete(imageInfo);
         } else {
             throw new RuntimeException("Can't delete images!");
@@ -100,5 +103,13 @@ public class ImageService {
             throw new RuntimeException(e);
         }
         imageInfoService.update(entity);
+    }
+
+    public List<ImageInfo> findAllImageInfosByOwnerName(String OwnerName) {
+        if (OwnerName == null || OwnerName.isEmpty()) {
+            return null;
+        } else {
+            return imageInfoRepository.findAllByOwnerName(OwnerName);
+        }
     }
 }

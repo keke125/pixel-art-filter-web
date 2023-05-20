@@ -289,6 +289,8 @@ public class PixelTransformView extends Div implements LocaleChangeObserver, Bef
                             }
                             return;
                         }
+                    } else {
+                        authenticatedUser.logout();
                     }
                 } else {
                     String errorMessage = String.format("因為上傳檔案 %s 非圖片，將忽略該檔案", uploadFileName);

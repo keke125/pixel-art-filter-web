@@ -1,7 +1,10 @@
 package com.keke125.pixel.views.gallery;
 
 import com.keke125.pixel.data.entity.ImageInfo;
+import com.keke125.pixel.data.entity.User;
+import com.keke125.pixel.data.service.ImageService;
 import com.keke125.pixel.views.generateimage.PixelTransformView;
+import com.vaadin.flow.component.UI;
 import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.button.ButtonVariant;
 import com.vaadin.flow.component.details.Details;
@@ -31,7 +34,7 @@ import java.nio.file.Files;
 
 public class GalleryViewCard extends ListItem {
 
-    public GalleryViewCard(ImageInfo imageInfo) {
+    public GalleryViewCard(ImageService imageService, ImageInfo imageInfo, User user) {
         addClassNames(Background.CONTRAST_5, Display.FLEX, FlexDirection.COLUMN, AlignItems.START, Padding.MEDIUM,
                 BorderRadius.LARGE);
 
@@ -138,6 +141,15 @@ public class GalleryViewCard extends ListItem {
         closeButton.addThemeVariants(ButtonVariant.LUMO_TERTIARY);
         detailDialog.getHeader().add(closeButton);
 
-        add(div, header, badge, detailButton, detailDialog);
+
+        // delete image button
+        Button deleteButton = new Button("Delete");
+        deleteButton.addThemeVariants(ButtonVariant.LUMO_PRIMARY, ButtonVariant.LUMO_ERROR);
+        deleteButton.addClickListener(clickEvent -> {
+            imageService.deleteImageInfo(imageInfo, user);
+            UI.getCurrent().getPage().reload();
+        });
+
+        add(div, header, badge, detailButton, deleteButton, detailDialog);
     }
 }

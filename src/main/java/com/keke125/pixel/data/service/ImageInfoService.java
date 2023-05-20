@@ -40,4 +40,8 @@ public class ImageInfoService {
     public int count() {
         return (int) repository.count();
     }
+
+    public ImageInfoRepository getRepository() {
+        return this.repository;
+    }
 }
