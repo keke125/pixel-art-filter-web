@@ -475,9 +475,9 @@ public class PixelTransformView extends Div implements LocaleChangeObserver, Bef
             return value;
         }
 
-        public static String valueToName(Integer value) {
+        public static String valueToName(Integer value, String language) {
             String name = null;
-            if (value == 0) {
+            if (value == 0 && language.equals("EN")) {
                 name = "None";
             } else if (value == 50) {
                 name = "Weak";
@@ -485,6 +485,16 @@ public class PixelTransformView extends Div implements LocaleChangeObserver, Bef
                 name = "Medium";
             } else if (value == 200) {
                 name = "Strong";
+            }
+
+            if (value == 0 && language.equals("TC")) {
+                name = "無";
+            } else if (value == 50) {
+                name = "弱";
+            } else if (value == 100) {
+                name = "中";
+            } else if (value == 200) {
+                name = "強";
             }
             return name;
         }
@@ -505,14 +515,22 @@ public class PixelTransformView extends Div implements LocaleChangeObserver, Bef
             this.name = name;
         }
 
-        public static String valueToName(Integer value) {
+        public static String valueToName(Integer value, String language) {
             String name = null;
-            if (value == 0) {
+            if (value == 0 && language.equals("EN")) {
                 name = "None";
             } else if (value == 1) {
                 name = "Weak";
             } else if (value == 2) {
                 name = "Strong";
+            }
+
+            if (value == 0 && language.equals("TC")) {
+                name = "無";
+            } else if (value == 1) {
+                name = "弱";
+            } else if (value == 2) {
+                name = "強";
             }
             return name;
         }
