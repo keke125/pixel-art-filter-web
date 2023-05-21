@@ -7,10 +7,7 @@ import com.keke125.pixel.security.AuthenticatedUser;
 import com.keke125.pixel.views.MainLayout;
 import com.vaadin.flow.component.HasComponents;
 import com.vaadin.flow.component.HasStyle;
-import com.vaadin.flow.component.html.H2;
-import com.vaadin.flow.component.html.Main;
-import com.vaadin.flow.component.html.OrderedList;
-import com.vaadin.flow.component.html.Paragraph;
+import com.vaadin.flow.component.html.*;
 import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
 import com.vaadin.flow.router.PageTitle;
@@ -25,7 +22,6 @@ import com.vaadin.flow.theme.lumo.LumoUtility.ListStyleType;
 import com.vaadin.flow.theme.lumo.LumoUtility.Margin;
 import com.vaadin.flow.theme.lumo.LumoUtility.MaxWidth;
 import com.vaadin.flow.theme.lumo.LumoUtility.Padding;
-import com.vaadin.flow.theme.lumo.LumoUtility.TextColor;
 import jakarta.annotation.security.RolesAllowed;
 
 import java.util.List;
@@ -44,10 +40,10 @@ public class GalleryView extends Main implements HasComponents, HasStyle {
 
     public GalleryView(ImageService imageService, AuthenticatedUser authenticatedUser) {
         this.authenticatedUser = authenticatedUser;
-        constructUI();
-        Optional<User> maybeUser = authenticatedUser.get();
+        Optional<User> maybeUser = this.authenticatedUser.get();
         if (maybeUser.isPresent()) {
             this.user = maybeUser.get();
+            constructUI();
             List<ImageInfo> imageInfoList = imageService.findAllImageInfosByOwnerName(this.user.getUsername());
             if (!imageInfoList.isEmpty()) {
                 for (ImageInfo i : imageInfoList) {
@@ -65,16 +61,17 @@ public class GalleryView extends Main implements HasComponents, HasStyle {
         container.addClassNames(AlignItems.CENTER, JustifyContent.BETWEEN);
 
         VerticalLayout headerContainer = new VerticalLayout();
-        H2 header = new H2("Beautiful photos");
+        H2 header = new H2("Generated images");
         header.addClassNames(Margin.Bottom.NONE, Margin.Top.XLARGE, FontSize.XXXLARGE);
-        Paragraph description = new Paragraph("Royalty free photos and pictures, courtesy of Unsplash");
-        description.addClassNames(Margin.Bottom.XLARGE, Margin.Top.NONE, TextColor.SECONDARY);
-        headerContainer.add(header, description);
+        headerContainer.add(header);
+
+        Label imageSize = new Label(String.format("當前容量: %sMB", Math.round(user.getImageSize())));
+        Label imageSizeLimit = new Label(String.format("容量限制: %sMB", Math.round(user.getImageSizeLimit())));
 
         imageContainer = new OrderedList();
         imageContainer.addClassNames(Gap.MEDIUM, Display.GRID, ListStyleType.NONE, Margin.NONE, Padding.NONE);
 
-        container.add(headerContainer);
+        container.add(headerContainer, imageSize, imageSizeLimit);
         add(container, imageContainer);
 
     }
