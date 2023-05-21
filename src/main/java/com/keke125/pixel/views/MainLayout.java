@@ -8,6 +8,7 @@ import com.keke125.pixel.views.about.AboutView;
 import com.keke125.pixel.views.gallery.GalleryView;
 import com.keke125.pixel.views.generateimage.PixelTransformView;
 import com.keke125.pixel.views.usermanagement.UserManagementView;
+import com.keke125.pixel.views.userprofile.UserProfileView;
 import com.vaadin.flow.component.UI;
 import com.vaadin.flow.component.applayout.AppLayout;
 import com.vaadin.flow.component.applayout.DrawerToggle;
@@ -56,6 +57,7 @@ public class MainLayout extends AppLayout implements LocaleChangeObserver {
     private AppNavItem galleryViewNav;
     private AppNavItem pixelTransformViewNav;
     private AppNavItem aboutViewNav;
+    private AppNavItem userProfileViewNav;
     private AppNavItem userManagementViewNav;
 
 
@@ -126,6 +128,8 @@ public class MainLayout extends AppLayout implements LocaleChangeObserver {
                 ("about", UI.getCurrent().getLocale()), AboutView.class, LineAwesomeIcon.FILE.create());
         userManagementViewNav = new AppNavItem(translator.getTranslation
                 ("user-management", UI.getCurrent().getLocale()), UserManagementView.class, LineAwesomeIcon.USERS_SOLID.create());
+        userProfileViewNav = new AppNavItem(translator.getTranslation
+                ("user-profile", UI.getCurrent().getLocale()), UserProfileView.class, LineAwesomeIcon.USER.create());
         if (accessChecker.hasAccess(GalleryView.class)) {
             nav.addItem(galleryViewNav);
 
@@ -138,11 +142,14 @@ public class MainLayout extends AppLayout implements LocaleChangeObserver {
             nav.addItem(aboutViewNav);
 
         }
+        if (accessChecker.hasAccess(UserProfileView.class)) {
+            nav.addItem(userProfileViewNav);
+
+        }
         if (accessChecker.hasAccess(UserManagementView.class)) {
             nav.addItem(userManagementViewNav);
 
         }
-
         return nav;
     }
 
@@ -203,6 +210,7 @@ public class MainLayout extends AppLayout implements LocaleChangeObserver {
         galleryViewNav.setLabel(translator.getTranslation("gallery", UI.getCurrent().getLocale()));
         pixelTransformViewNav.setLabel(translator.getTranslation("pixel-transform", UI.getCurrent().getLocale()));
         aboutViewNav.setLabel(translator.getTranslation("about", UI.getCurrent().getLocale()));
+        userProfileViewNav.setLabel(translator.getTranslation("user-profile", UI.getCurrent().getLocale()));
         userManagementViewNav.setLabel(translator.getTranslation("user-management", UI.getCurrent().getLocale()));
     }
 
