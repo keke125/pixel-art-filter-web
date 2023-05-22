@@ -119,35 +119,35 @@ public class GalleryViewCard extends ListItem implements LocaleChangeObserver {
         detailDialog.add(dialogLayout);
 
         // show image transform parameter
-        colorNumber = new Span(translator.getTranslation("Color number: ", UI.getCurrent().getLocale()) + imageInfo.getColorNumber());
-        pixelSize = new Span(translator.getTranslation("Pixel size: ", UI.getCurrent().getLocale()) + imageInfo.getPixelSize());
+        colorNumber = new Span(translator.getTranslation("Color-number", UI.getCurrent().getLocale()) + imageInfo.getColorNumber() + ": ");
+        pixelSize = new Span(translator.getTranslation("Pixel-size", UI.getCurrent().getLocale()) + imageInfo.getPixelSize() + ": ");
         if (getLocale().equals(Translator.LOCALE_ZHT)) {
-            smooth = new Span(translator.getTranslation("Smooth: ", UI.getCurrent().getLocale()) + PixelTransformView.Smooth.valueToName(imageInfo.getSmooth(), "TC"));
-            edgeCrispening = new Span(translator.getTranslation("Edge crispening: ", UI.getCurrent().getLocale()) + PixelTransformView.EdgeCrispening.valueToName(imageInfo.getEdgeCrispening(), "TC"));
+            smooth = new Span(translator.getTranslation("Smooth", UI.getCurrent().getLocale()) + PixelTransformView.Smooth.valueToName(imageInfo.getSmooth(), "TC") + ": ");
+            edgeCrispening = new Span(translator.getTranslation("Edge-crispening", UI.getCurrent().getLocale()) + PixelTransformView.EdgeCrispening.valueToName(imageInfo.getEdgeCrispening(), "TC") + ": ");
         } else {
-            smooth = new Span(translator.getTranslation("Smooth: ", UI.getCurrent().getLocale()) + PixelTransformView.Smooth.valueToName(imageInfo.getSmooth(), "EN"));
-            edgeCrispening = new Span(translator.getTranslation("Edge crispening: ", UI.getCurrent().getLocale()) + PixelTransformView.EdgeCrispening.valueToName(imageInfo.getEdgeCrispening(), "EN"));
+            smooth = new Span(translator.getTranslation("Smooth", UI.getCurrent().getLocale()) + PixelTransformView.Smooth.valueToName(imageInfo.getSmooth(), "EN") + ": ");
+            edgeCrispening = new Span(translator.getTranslation("Edge-crispening", UI.getCurrent().getLocale()) + PixelTransformView.EdgeCrispening.valueToName(imageInfo.getEdgeCrispening(), "EN") + ": ");
         }
-        saturation = new Span(translator.getTranslation("Saturation: ", UI.getCurrent().getLocale()) + imageInfo.getSaturation());
-        contrastRatio = new Span(translator.getTranslation("Contras ratio: ", UI.getCurrent().getLocale()) + imageInfo.getContrastRatio());
+        saturation = new Span(translator.getTranslation("Saturation", UI.getCurrent().getLocale()) + imageInfo.getSaturation() + ": ");
+        contrastRatio = new Span(translator.getTranslation("Contras-ratio", UI.getCurrent().getLocale()) + imageInfo.getContrastRatio() + ": ");
         VerticalLayout parameterLayout = new VerticalLayout(colorNumber, pixelSize, smooth, edgeCrispening, saturation, contrastRatio);
         parameterLayout.setSpacing(false);
         parameterLayout.setPadding(false);
-        parameterDetails = new Details(translator.getTranslation("Image transform parameter", UI.getCurrent().getLocale()), parameterLayout);
+        parameterDetails = new Details(translator.getTranslation("Image-transform-parameter", UI.getCurrent().getLocale()), parameterLayout);
         detailDialog.add(parameterDetails);
 
         // download original
-        downloadOriginal = new Anchor(originalResource, translator.getTranslation("Download Original", UI.getCurrent().getLocale()));
+        downloadOriginal = new Anchor(originalResource, translator.getTranslation("Download-Original", UI.getCurrent().getLocale()));
         downloadOriginal.getElement().setAttribute("download", true);
         downloadOriginal.removeAll();
-        downloadOriginal.add(new Button(translator.getTranslation("Download Original", UI.getCurrent().getLocale())));
+        downloadOriginal.add(new Button(translator.getTranslation("Download-Original", UI.getCurrent().getLocale())));
         detailDialog.getFooter().add(downloadOriginal);
 
         // download generated
-        downloadGenerated = new Anchor(generatedResource, translator.getTranslation("Download Generated", UI.getCurrent().getLocale()));
+        downloadGenerated = new Anchor(generatedResource, translator.getTranslation("Download-Generated", UI.getCurrent().getLocale()));
         downloadGenerated.getElement().setAttribute("download", true);
         downloadGenerated.removeAll();
-        downloadGenerated.add(new Button(translator.getTranslation("Download Generated", UI.getCurrent().getLocale())));
+        downloadGenerated.add(new Button(translator.getTranslation("Download-Generated", UI.getCurrent().getLocale())));
         detailDialog.getFooter().add(downloadGenerated);
 
         // close detail dialog

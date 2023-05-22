@@ -71,20 +71,33 @@ public class PixelTransformView extends Div implements LocaleChangeObserver, Bef
     private final Select<Integer> saturation = new Select<>();
     private final Select<Integer> contrastRatio = new Select<>();
     private final Select<EdgeCrispening> edgeCrispening = new Select<>();
-    private final Button save = new Button("儲存");
+    private final Button save;
+    private final H3 setParameterTitle;
+    private final ConfirmDialog confirmDialog;
     private final Map<String, File> imageFileMap = new HashMap<>();
     // binder with Class SampleImage
     private final Binder<ImageInfo> binderImage = new Binder<>(ImageInfo.class);
     // button cancel and button save
     private final Button cancel = new Button();
+    private final Paragraph hint = new Paragraph();
+    private final Span dropLabel = new Span();
+    private final H3 uploadImageTitle;
     // file buffer and upload
     private final MultiFileBuffer multiFileBuffer = new MultiFileBuffer();
     private final Upload multiFileUpload = new Upload(multiFileBuffer);
+    // only file size below 10MB can be uploaded
+    // you can modify this value, but the limit is 2047MB
+    private final int maxFileSizeInMegaBytes = 10;
+    private final int maxFileSizeInBytes = maxFileSizeInMegaBytes * 1024 * 1024;
+    // max 3 files can be uploaded
+    // you can modify this value
+    private final int maxFiles = 3;
     // setup upload i18n
     private UploadTCI18N uploadTCI18N;
     private UploadENI18N uploadENI18N;
     // inject sample image service
     private final ImageInfoService imageInfoService;
+    private final ImageService imageService;
     private ImageInfo newImageInfo;
 
     private final AuthenticatedUser authenticatedUser;
@@ -95,15 +108,21 @@ public class PixelTransformView extends Div implements LocaleChangeObserver, Bef
 
     public PixelTransformView(ImageInfoService imageInfoService, AuthenticatedUser authenticatedUser, UserService userService, ImageService imageService) {
         this.imageInfoService = imageInfoService;
+        this.imageService = imageService;
         this.authenticatedUser = authenticatedUser;
         this.userService = userService;
         this.isSaved = false;
         binderUser = new BeanValidationBinder<>(User.class);
+        save = new Button(translator.getTranslation("save", UI.getCurrent().getLocale()));
+        setParameterTitle = new H3(translator.getTranslation("Set-up-transform-parameter", UI.getCurrent().getLocale()));
+        uploadImageTitle = new H3(translator.getTranslation("upload-image-title", UI.getCurrent().getLocale()));
+        confirmDialog = new ConfirmDialog();
         addClassName("pixel-transform-view");
 
-        add(createTitle());
+        //add(createTitle());
+        add(setParameterTitle);
         add(createFormLayout());
-        add(createUploadTitle());
+        add(uploadImageTitle);
         add(createUploadLayout());
         add(createButtonLayout());
 
@@ -140,15 +159,15 @@ public class PixelTransformView extends Div implements LocaleChangeObserver, Bef
                                 throw new RuntimeException(ex);
                             }
                         } else {
-                            Notification.show(String.format("因為圖片儲存空間已滿，從圖片 %s 開始上傳失敗", entry.getKey()));
+                            Notification.show(String.format(translator.getTranslation("reached-images-size-limit", UI.getCurrent().getLocale()), entry.getKey()));
                             break;
                         }
                     }
                 }
-                Notification.show(String.format("已保存圖片及生成參數資訊，共成功上傳%d張圖片，圖片總大小為 %f MB", imageFileMap.size(), imageFileSize));
+                Notification.show(String.format(translator.getTranslation("saved-upload", UI.getCurrent().getLocale()), imageFileMap.size(), imageFileSize));
                 imageFileMap.clear();
             } else {
-                Notification.show("沒有上傳圖片或重複上傳圖片");
+                Notification.show(translator.getTranslation("empty-duplicate-upload-failed", UI.getCurrent().getLocale()));
             }
             isSaved = true;
             clearForm();
@@ -161,39 +180,31 @@ public class PixelTransformView extends Div implements LocaleChangeObserver, Bef
         colorNumber.setValue(4);
         pixelSize.setValue(2);
         if (getLocale().equals(Translator.LOCALE_ZHT)) {
-            //smooth.setItems(Smooth.NoneTC, Smooth.WeakTC, Smooth.MediumTC, Smooth.StrongTC);
             smooth.setValue(Smooth.NoneTC);
-            //edgeCrispening.setItems(EdgeCrispening.NoneTC, EdgeCrispening.WeakTC, EdgeCrispening.StrongTC);
             edgeCrispening.setValue(EdgeCrispening.NoneTC);
         } else {
-            //smooth.setItems(Smooth.NoneEN, Smooth.WeakEN, Smooth.MediumEN, Smooth.StrongEN);
             smooth.setValue(Smooth.NoneEN);
-            //edgeCrispening.setItems(EdgeCrispening.NoneEN, EdgeCrispening.WeakEN, EdgeCrispening.StrongEN);
             edgeCrispening.setValue(EdgeCrispening.NoneEN);
         }
         saturation.setValue(0);
         contrastRatio.setValue(0);
     }
 
-    private Component createTitle() {
-        return new H3("設定轉換參數");
-    }
-
     private Component createFormLayout() {
         FormLayout formLayout = new FormLayout();
         // setup select item
-        colorNumber.setLabel(translator.getTranslation("colorNumber", UI.getCurrent().getLocale(), colorNumber));
+        colorNumber.setLabel(translator.getTranslation("Color-number", UI.getCurrent().getLocale()));
         colorNumber.setItems(2, 4, 8, 16);
         colorNumber.setValue(4);
-        colorNumber.setTooltipText("Color Number refers to the number of colors to be reserved after the pixel transform.");
-        pixelSize.setLabel("像素大小");
+        colorNumber.setTooltipText(translator.getTranslation("colorNumber-tooltip", UI.getCurrent().getLocale()));
+        pixelSize.setLabel(translator.getTranslation("Pixel-size", UI.getCurrent().getLocale()));
         pixelSize.setItems(1, 2, 3, 4, 5);
         pixelSize.setValue(2);
-        pixelSize.setTooltipText("Pixel Size refers to the size of each pixel in an image. If the pixel size is increased, the image will become more blurred.");
-        smooth.setLabel("平滑程度");
-        smooth.setTooltipText("Smooth will blur certain parts of your image, resulting in a reduction of noise points in the final output.");
-        edgeCrispening.setLabel("邊緣銳化");
-        edgeCrispening.setTooltipText("Outlines Enhance can help to emphasize objects within an image.");
+        pixelSize.setTooltipText(translator.getTranslation("pixelSize-tooltip", UI.getCurrent().getLocale()));
+        smooth.setLabel(translator.getTranslation("Smooth", UI.getCurrent().getLocale()));
+        smooth.setTooltipText(translator.getTranslation("smooth-tooltip", UI.getCurrent().getLocale()));
+        edgeCrispening.setLabel(translator.getTranslation("Edge-crispening", UI.getCurrent().getLocale()));
+        edgeCrispening.setTooltipText(translator.getTranslation("edgeCrispening-tooltip", UI.getCurrent().getLocale()));
         if (getLocale().equals(Translator.LOCALE_ZHT)) {
             smooth.setItems(Smooth.NoneTC, Smooth.WeakTC, Smooth.MediumTC, Smooth.StrongTC);
             smooth.setValue(Smooth.NoneTC);
@@ -205,14 +216,14 @@ public class PixelTransformView extends Div implements LocaleChangeObserver, Bef
             edgeCrispening.setItems(EdgeCrispening.NoneEN, EdgeCrispening.WeakEN, EdgeCrispening.StrongEN);
             edgeCrispening.setValue(EdgeCrispening.NoneEN);
         }
-        saturation.setLabel("色度(飽和度)");
+        saturation.setLabel(translator.getTranslation("Saturation", UI.getCurrent().getLocale()));
         saturation.setItems(-250, -200, -150, -100, -50, 0, 50, 100, 150, 200, 250);
         saturation.setValue(0);
-        saturation.setTooltipText("Saturation can help to adjust the light intensity of an image.");
-        contrastRatio.setLabel("對比度");
+        saturation.setTooltipText(translator.getTranslation("saturation-tooltip", UI.getCurrent().getLocale()));
+        contrastRatio.setLabel(translator.getTranslation("Contras-ratio", UI.getCurrent().getLocale()));
         contrastRatio.setItems(-250, -200, -150, -100, -50, 0, 50, 100, 150, 200, 250);
         contrastRatio.setValue(0);
-        contrastRatio.setTooltipText("Contrast Ratio can help to make an image appear more intense or have greater contrast.");
+        contrastRatio.setTooltipText(translator.getTranslation("contrastRatio-tooltip", UI.getCurrent().getLocale()));
         formLayout.add(colorNumber, pixelSize, smooth, edgeCrispening, saturation, contrastRatio);
         return formLayout;
 
@@ -231,19 +242,13 @@ public class PixelTransformView extends Div implements LocaleChangeObserver, Bef
         }
         // only image file can be uploaded
         multiFileUpload.setAcceptedFileTypes("image/bmp", "image/jpeg", "image/webp", "image/x-portable-anymap", "image/x-portable-bitmap", "image/x-portable-graymap", "image/x-portable-pixmap", ".pxm", ".sr", "image/x-cmu-raster", "image/tiff");
-        // max 3 files can be uploaded
-        int maxFiles = 3;
         multiFileUpload.setMaxFiles(maxFiles);
-        // only file size below 10MB can be uploaded
-        int maxFileSizeInBytes = 10 * 1024 * 1024;
-        int maxFileSizeInMegaBytes = 10;
         multiFileUpload.setMaxFileSize(maxFileSizeInBytes);
         // upload hint message
-        Paragraph hint = new Paragraph(
-                "單一檔案大小不能超過" + maxFileSizeInMegaBytes + "MB，每次最多上傳" + maxFiles + "張，只能上傳圖片檔");
+        hint.setText(String.format(translator.getTranslation("upload-hint", UI.getCurrent().getLocale()), maxFileSizeInMegaBytes, maxFiles));
         add(hint);
         // upload drop label
-        Span dropLabel = new Span("檔案將上傳至我們的伺服器，可參考我們的隱私權政策");
+        dropLabel.setText(translator.getTranslation("upload-notification", UI.getCurrent().getLocale()));
         multiFileUpload.setDropLabel(dropLabel);
         // succeed upload
         multiFileUpload.addSucceededListener(event -> {
@@ -278,7 +283,7 @@ public class PixelTransformView extends Div implements LocaleChangeObserver, Bef
                         if ((this.user.getImageSize() + (double) savedFileData.getFile().length() / 1024 / 1024) < this.user.getImageSizeLimit()) {
                             System.out.printf("Tmp File saved to: %s.\n", absolutePath);
                         } else {
-                            String errorMessage = String.format("因為儲存空間不足，上傳檔案 %s 失敗", uploadFileName);
+                            String errorMessage = String.format(translator.getTranslation("reached-image-size-limit", UI.getCurrent().getLocale()), uploadFileName);
                             Notification notification = Notification.show(errorMessage, 5000,
                                     Notification.Position.BOTTOM_CENTER);
                             notification.addThemeVariants(NotificationVariant.LUMO_ERROR);
@@ -293,7 +298,7 @@ public class PixelTransformView extends Div implements LocaleChangeObserver, Bef
                         authenticatedUser.logout();
                     }
                 } else {
-                    String errorMessage = String.format("因為上傳檔案 %s 非圖片，將忽略該檔案", uploadFileName);
+                    String errorMessage = String.format(translator.getTranslation("non-image-upload-failed", UI.getCurrent().getLocale()), uploadFileName);
                     Notification notification = Notification.show(errorMessage, 5000,
                             Notification.Position.BOTTOM_CENTER);
                     notification.addThemeVariants(NotificationVariant.LUMO_ERROR);
@@ -305,7 +310,7 @@ public class PixelTransformView extends Div implements LocaleChangeObserver, Bef
                     return;
                 }
             } else {
-                String errorMessage = String.format("因為無法辨識上傳檔案 %s 類型，將忽略該檔案", uploadFileName);
+                String errorMessage = String.format(translator.getTranslation("non-recognized-upload-failed", UI.getCurrent().getLocale()), uploadFileName);
                 Notification notification = Notification.show(errorMessage, 5000,
                         Notification.Position.BOTTOM_CENTER);
                 notification.addThemeVariants(NotificationVariant.LUMO_ERROR);
@@ -360,7 +365,7 @@ public class PixelTransformView extends Div implements LocaleChangeObserver, Bef
                     if (!imageFileMap.containsKey(uploadFileName)) {
                         imageFileMap.put(uploadFileName, imageDirectoryFile.toPath().resolve(newFileFullName).toFile());
                     } else {
-                        String errorMessage = String.format("同時上傳相同檔名 %s 的圖片，將只處理第一次上傳的圖片", uploadFileName);
+                        String errorMessage = String.format(translator.getTranslation("same-filename-upload-ignored", UI.getCurrent().getLocale()), uploadFileName);
                         Notification notification = Notification.show(errorMessage, 5000,
                                 Notification.Position.BOTTOM_CENTER);
                         notification.addThemeVariants(NotificationVariant.LUMO_ERROR);
@@ -407,8 +412,29 @@ public class PixelTransformView extends Div implements LocaleChangeObserver, Bef
 
     @Override
     public void localeChange(LocaleChangeEvent localeChangeEvent) {
-        colorNumber.setLabel(translator.getTranslation("colorNumber", UI.getCurrent().getLocale(), colorNumber));
-        cancel.setText(translator.getTranslation("cancelButton", UI.getCurrent().getLocale(), cancel));
+        save.setText(translator.getTranslation("save", UI.getCurrent().getLocale()));
+        setParameterTitle.setText(translator.getTranslation("Set-up-transform-parameter", UI.getCurrent().getLocale()));
+        uploadImageTitle.setText(translator.getTranslation("upload-image-title", UI.getCurrent().getLocale()));
+        confirmDialog.setText(translator.getTranslation("Unsaved-changes", UI.getCurrent().getLocale()));
+        confirmDialog.setCancelText(translator.getTranslation("cancel", UI.getCurrent().getLocale()));
+        confirmDialog.setConfirmText(translator.getTranslation("save", UI.getCurrent().getLocale()));
+        confirmDialog.setRejectText(translator.getTranslation("discard", UI.getCurrent().getLocale()));
+        colorNumber.setLabel(translator.getTranslation("Color-number", UI.getCurrent().getLocale()));
+        colorNumber.setTooltipText(translator.getTranslation("colorNumber-tooltip", UI.getCurrent().getLocale()));
+        pixelSize.setLabel(translator.getTranslation("Pixel-size", UI.getCurrent().getLocale()));
+        pixelSize.setTooltipText(translator.getTranslation("pixelSize-tooltip", UI.getCurrent().getLocale()));
+        smooth.setLabel(translator.getTranslation("Smooth", UI.getCurrent().getLocale()));
+        smooth.setTooltipText(translator.getTranslation("smooth-tooltip", UI.getCurrent().getLocale()));
+        edgeCrispening.setLabel(translator.getTranslation("Edge-crispening", UI.getCurrent().getLocale()));
+        edgeCrispening.setTooltipText(translator.getTranslation("edgeCrispening-tooltip", UI.getCurrent().getLocale()));
+        saturation.setLabel(translator.getTranslation("Saturation", UI.getCurrent().getLocale()));
+        saturation.setTooltipText(translator.getTranslation("saturation-tooltip", UI.getCurrent().getLocale()));
+        contrastRatio.setLabel(translator.getTranslation("Contras-ratio", UI.getCurrent().getLocale()));
+        contrastRatio.setTooltipText(translator.getTranslation("contrastRatio-tooltip", UI.getCurrent().getLocale()));
+        hint.setText(String.format(translator.getTranslation("upload-hint", UI.getCurrent().getLocale()), maxFileSizeInMegaBytes, maxFiles));
+        dropLabel.setText(translator.getTranslation("upload-notification", UI.getCurrent().getLocale()));
+        save.setText(translator.getTranslation("save", UI.getCurrent().getLocale()));
+        cancel.setText(translator.getTranslation("cancel", UI.getCurrent().getLocale(), cancel));
         if (localeChangeEvent.getLocale().equals(Translator.LOCALE_ZHT)) {
             multiFileUpload.setI18n(uploadTCI18N);
             smooth.setItems(Smooth.NoneTC, Smooth.WeakTC, Smooth.MediumTC, Smooth.StrongTC);
@@ -426,7 +452,7 @@ public class PixelTransformView extends Div implements LocaleChangeObserver, Bef
 
     private Component createButtonLayout() {
         HorizontalLayout buttonLayout = new HorizontalLayout();
-        cancel.setText(translator.getTranslation("cancelButton", UI.getCurrent().getLocale(), cancel));
+        cancel.setText(translator.getTranslation("cancel", UI.getCurrent().getLocale(), cancel));
         buttonLayout.addClassName("button-layout");
         save.addThemeVariants(ButtonVariant.LUMO_PRIMARY);
         buttonLayout.add(save);
@@ -437,26 +463,65 @@ public class PixelTransformView extends Div implements LocaleChangeObserver, Bef
     @Override
     public void beforeLeave(BeforeLeaveEvent beforeLeaveEvent) {
         if (!isSaved && !imageFileMap.isEmpty()) {
-            BeforeLeaveEvent.ContinueNavigationAction action =
-                    beforeLeaveEvent.postpone();
-            ConfirmDialog confirmDialog = new ConfirmDialog();
-            confirmDialog.setText("尚未儲存圖片及參數，是否離開?");
+            BeforeLeaveEvent.ContinueNavigationAction action = beforeLeaveEvent.postpone();
+            confirmDialog.setText(translator.getTranslation("Unsaved-changes", UI.getCurrent().getLocale()));
             confirmDialog.setCancelable(true);
-            confirmDialog.setCancelText("留在此頁");
-            confirmDialog.setConfirmText("確認離開");
-            confirmDialog.setCancelable(true);
-            confirmDialog.addConfirmListener(e -> {
-                        for (String s : imageFileMap.keySet()) {
-                            if (imageFileMap.get(s).delete()) {
-                                System.out.printf("Unsaved image %s have been deleted.\n", s);
-                            } else {
-                                System.err.printf("Failed to delete image %s.\n", s);
-                            }
-                            imageFileMap.clear();
+            confirmDialog.setCancelText(translator.getTranslation("cancel", UI.getCurrent().getLocale()));
+            confirmDialog.setConfirmText(translator.getTranslation("save", UI.getCurrent().getLocale()));
+            confirmDialog.setRejectable(true);
+            confirmDialog.setRejectText(translator.getTranslation("discard", UI.getCurrent().getLocale()));
+            confirmDialog.addRejectListener(e -> {
+                if (!imageFileMap.isEmpty()) {
+                    for (String s : imageFileMap.keySet()) {
+                        if (imageFileMap.get(s).delete()) {
+                            System.out.printf("Unsaved image %s have been deleted.\n", s);
+                        } else {
+                            System.err.printf("Failed to delete image %s.\n", s);
                         }
-                        action.proceed();
                     }
-            );
+                    imageFileMap.clear();
+                }
+                UI.getCurrent().getPage().reload();
+            });
+            confirmDialog.addConfirmListener(e -> {
+                if (!imageFileMap.isEmpty()) {
+                    double imageFileSize = 0.0;
+                    for (Map.Entry<String, File> entry : imageFileMap.entrySet()) {
+                        Optional<User> maybeUser = authenticatedUser.get();
+                        if (maybeUser.isPresent()) {
+                            this.user = maybeUser.get();
+                            // check if file size achieve file size limit
+                            if ((this.user.getImageSize() + (double) (entry.getValue().length() / 1024 / 1024)) < this.user.getImageSizeLimit()) {
+                                newImageInfo = new ImageInfo("Pixel Transform", colorNumber.getValue(), pixelSize.getValue(), smooth.getValue().getValue(), edgeCrispening.getValue().getValue(), saturation.getValue(), contrastRatio.getValue(), entry.getValue().getPath(), null, entry.getValue().getName(), null, this.user.getUsername(), entry.getKey());
+                                imageService.imageProcess(newImageInfo, this.user);
+                                try {
+                                    binderImage.writeBean(newImageInfo);
+                                    this.imageInfoService.update(newImageInfo);
+                                    this.user.setImageSize(this.user.getImageSize() + (double) entry.getValue().length() / 1024 / 1024);
+                                    imageFileSize += (double) entry.getValue().length() / 1024 / 1024;
+                                    try {
+                                        binderUser.writeBean(this.user);
+                                        this.userService.update(this.user);
+                                    } catch (ValidationException ex) {
+                                        throw new RuntimeException(ex);
+                                    }
+                                } catch (ValidationException ex) {
+                                    throw new RuntimeException(ex);
+                                }
+                            } else {
+                                Notification.show(String.format(translator.getTranslation("reached-images-size-limit", UI.getCurrent().getLocale()), entry.getKey()));
+                                break;
+                            }
+                        }
+                    }
+                    Notification.show(String.format(translator.getTranslation("saved-upload", UI.getCurrent().getLocale()), imageFileMap.size(), imageFileSize));
+                    imageFileMap.clear();
+                } else {
+                    Notification.show(translator.getTranslation("empty-duplicate-upload-failed", UI.getCurrent().getLocale()));
+                }
+                isSaved = true;
+                clearForm();
+            });
             confirmDialog.open();
         }
     }
@@ -573,11 +638,12 @@ public class PixelTransformView extends Div implements LocaleChangeObserver, Bef
         }
     }
 
+    /*
     // upload image title
     private Component createUploadTitle() {
         return new H3("上傳圖片");
     }
-
+    */
     // upload EN i18n
     public static class UploadENI18N extends UploadI18N {
         public UploadENI18N() {
