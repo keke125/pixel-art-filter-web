@@ -1,5 +1,6 @@
 package com.keke125.pixel.views.generateimage;
 
+import com.keke125.pixel.core.AppConfig;
 import com.keke125.pixel.core.Util;
 import com.keke125.pixel.data.entity.ImageInfo;
 import com.keke125.pixel.data.entity.User;
@@ -43,6 +44,8 @@ import jakarta.annotation.security.RolesAllowed;
 import org.apache.commons.codec.digest.DigestUtils;
 import org.apache.commons.io.FilenameUtils;
 import org.apache.tika.Tika;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 
 import java.io.File;
 import java.io.IOException;
@@ -60,6 +63,7 @@ import java.util.Optional;
 @RolesAllowed("USER")
 @Uses(Icon.class)
 public class PixelTransformView extends Div implements LocaleChangeObserver, BeforeLeaveObserver {
+    private final AppConfig appConfig;
 
     // i18n provider
     private static final Translator translator = new Translator();
@@ -85,13 +89,7 @@ public class PixelTransformView extends Div implements LocaleChangeObserver, Bef
     // file buffer and upload
     private final MultiFileBuffer multiFileBuffer = new MultiFileBuffer();
     private final Upload multiFileUpload = new Upload(multiFileBuffer);
-    // only file size below 10MB can be uploaded
-    // you can modify this value, but the limit is 2047MB
-    private final int maxFileSizeInMegaBytes = 10;
-    private final int maxFileSizeInBytes = maxFileSizeInMegaBytes * 1024 * 1024;
-    // max 3 files can be uploaded
-    // you can modify this value
-    private final int maxFiles = 3;
+    private final int maxImageSizeInBytes;
     // setup upload i18n
     private UploadTCI18N uploadTCI18N;
     private UploadENI18N uploadENI18N;
@@ -106,12 +104,14 @@ public class PixelTransformView extends Div implements LocaleChangeObserver, Bef
     private User user;
     private boolean isSaved;
 
-    public PixelTransformView(ImageInfoService imageInfoService, AuthenticatedUser authenticatedUser, UserService userService, ImageService imageService) {
+    public PixelTransformView(ImageInfoService imageInfoService, AuthenticatedUser authenticatedUser, UserService userService, ImageService imageService, AppConfig appConfig) {
         this.imageInfoService = imageInfoService;
         this.imageService = imageService;
         this.authenticatedUser = authenticatedUser;
         this.userService = userService;
         this.isSaved = false;
+        this.appConfig = appConfig;
+        this.maxImageSizeInBytes = appConfig.getMaxImageSizeInMegaBytes() * 1024 * 1024;
         binderUser = new BeanValidationBinder<>(User.class);
         save = new Button(translator.getTranslation("save", UI.getCurrent().getLocale()));
         setParameterTitle = new H3(translator.getTranslation("Set-up-transform-parameter", UI.getCurrent().getLocale()));
@@ -242,10 +242,10 @@ public class PixelTransformView extends Div implements LocaleChangeObserver, Bef
         }
         // only image file can be uploaded
         multiFileUpload.setAcceptedFileTypes("image/bmp", "image/jpeg", "image/webp", "image/x-portable-anymap", "image/x-portable-bitmap", "image/x-portable-graymap", "image/x-portable-pixmap", ".pxm", ".sr", "image/x-cmu-raster", "image/tiff");
-        multiFileUpload.setMaxFiles(maxFiles);
-        multiFileUpload.setMaxFileSize(maxFileSizeInBytes);
+        multiFileUpload.setMaxFiles(appConfig.getMaxImageFiles());
+        multiFileUpload.setMaxFileSize(maxImageSizeInBytes);
         // upload hint message
-        hint.setText(String.format(translator.getTranslation("upload-multiple-hint", UI.getCurrent().getLocale()), maxFileSizeInMegaBytes, maxFiles));
+        hint.setText(String.format(translator.getTranslation("upload-multiple-hint", UI.getCurrent().getLocale()), appConfig.getMaxImageSizeInMegaBytes(), appConfig.getMaxImageFiles()));
         add(hint);
         // upload drop label
         dropLabel.setText(translator.getTranslation("upload-notification", UI.getCurrent().getLocale()));
@@ -431,7 +431,7 @@ public class PixelTransformView extends Div implements LocaleChangeObserver, Bef
         saturation.setTooltipText(translator.getTranslation("saturation-tooltip", UI.getCurrent().getLocale()));
         contrastRatio.setLabel(translator.getTranslation("Contras-ratio", UI.getCurrent().getLocale()));
         contrastRatio.setTooltipText(translator.getTranslation("contrastRatio-tooltip", UI.getCurrent().getLocale()));
-        hint.setText(String.format(translator.getTranslation("upload-multiple-hint", UI.getCurrent().getLocale()), maxFileSizeInMegaBytes, maxFiles));
+        hint.setText(String.format(translator.getTranslation("upload-multiple-hint", UI.getCurrent().getLocale()), appConfig.getMaxImageSizeInMegaBytes(), appConfig.getMaxImageFiles()));
         dropLabel.setText(translator.getTranslation("upload-notification", UI.getCurrent().getLocale()));
         save.setText(translator.getTranslation("save", UI.getCurrent().getLocale()));
         cancel.setText(translator.getTranslation("cancel", UI.getCurrent().getLocale(), cancel));

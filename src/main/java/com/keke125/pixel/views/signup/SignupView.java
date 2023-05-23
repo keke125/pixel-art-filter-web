@@ -1,5 +1,6 @@
 package com.keke125.pixel.views.signup;
 
+import com.keke125.pixel.core.AppConfig;
 import com.keke125.pixel.data.Role;
 import com.keke125.pixel.data.entity.User;
 import com.keke125.pixel.data.service.UserService;
@@ -28,6 +29,7 @@ import com.vaadin.flow.router.Route;
 import com.vaadin.flow.server.auth.AnonymousAllowed;
 import org.apache.tika.Tika;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -40,6 +42,7 @@ import java.util.Set;
 @Route(value = "signup")
 public class SignupView extends VerticalLayout {
 
+    private final AppConfig appConfig;
     private static UserService service;
     private static final Translator translator = new Translator();
     private final PasswordField passwordField1;
@@ -59,10 +62,12 @@ public class SignupView extends VerticalLayout {
     private final MemoryBuffer memoryBuffer;
     private final UploadTCI18N uploadTCI18N;
     private final UploadENI18N uploadENI18N;
-    // only file size below 3MB can be uploaded
-    // you can modify this value, but the limit is 2047MB
-    private final int maxFileSizeInMegaBytes = 3;
-    private final int maxFileSizeInBytes = maxFileSizeInMegaBytes * 1024 * 1024;
+
+    private final int maxFileSizeInBytes;
+    // The default image size limit for new sign-up users
+    // you can modify this value
+    // @Value("{user.image.size.limit:30}")
+    private double defaultImageSizeLimit;
     private final Span dropLabel;
     private final EmailField emailField;
     private final Span errorMessage;
@@ -71,9 +76,11 @@ public class SignupView extends VerticalLayout {
     /**
      * We use Spring to inject the backend into our view
      */
-    public SignupView(@Autowired UserService service) {
-
+    public SignupView(AppConfig appConfig, @Autowired UserService service) {
+        this.appConfig = appConfig;
         SignupView.service = service;
+        this.maxFileSizeInBytes = this.appConfig.getMaxAvatarSizeInMegaBytes() * 1024 * 1024;
+        this.defaultImageSizeLimit = this.appConfig.getNewSignupImageSizeLimit();
         newUser = new User();
 
         /*
@@ -101,8 +108,9 @@ public class SignupView extends VerticalLayout {
         upload.setAcceptedFileTypes("image/*");
         upload.setMaxFileSize(maxFileSizeInBytes);
         // upload drop label
-        dropLabel = new Span(String.format(translator.getTranslation("upload-single-hint", UI.getCurrent().getLocale()), maxFileSizeInMegaBytes));
+        dropLabel = new Span(String.format(translator.getTranslation("upload-single-hint", UI.getCurrent().getLocale()), this.appConfig.getMaxAvatarSizeInMegaBytes()));
         upload.setDropLabel(dropLabel);
+        upload.setReceiver(memoryBuffer);
         // succeed upload
         upload.addSucceededListener(event -> {
             // Determine which file was uploaded successfully
@@ -257,11 +265,11 @@ public class SignupView extends VerticalLayout {
             try {
 
                 // Create empty bean to store the details into
-                User detailsBean = new User();
+                //User detailsBean = new User();
 
 
                 // Run validators and write the values to the bean
-                binder.writeBean(detailsBean);
+                binder.writeBean(newUser);
 
                 // sign up user will be user, not admin
                 Set<Role> roles = new HashSet<>();
@@ -269,20 +277,20 @@ public class SignupView extends VerticalLayout {
                     roles.add(Role.ADMIN);
                 }
                 roles.add(Role.USER);
-                detailsBean.setRoles(roles);
+                newUser.setRoles(roles);
 
-                detailsBean.setEnabled(true);
-                detailsBean.setAccountNonExpired(true);
-                detailsBean.setAccountNonLocked(true);
-                detailsBean.setCredentialsNonExpired(true);
-                detailsBean.setImageSize(0.0);
-                detailsBean.setImageSizeLimit(10.0);
+                newUser.setEnabled(true);
+                newUser.setAccountNonExpired(true);
+                newUser.setAccountNonLocked(true);
+                newUser.setCredentialsNonExpired(true);
+                newUser.setImageSize(0.0);
+                newUser.setImageSizeLimit(defaultImageSizeLimit);
 
                 // Call backend to store the data
-                service.store(detailsBean);
+                service.store(newUser);
 
                 // Show success message if everything went well
-                showSuccess(detailsBean);
+                showSuccess(newUser);
 
                 UI.getCurrent().navigate("login");
 

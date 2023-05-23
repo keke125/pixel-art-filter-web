@@ -6,7 +6,7 @@
     <groupId>com.keke125.pixel</groupId>
     <artifactId>pixel-art-filter-web</artifactId>
     <name>pixel-art-filter-web</name>
-    <version>1.0-SNAPSHOT</version>
+    <version>1.1.0</version>
     <packaging>jar</packaging>
 
     <properties>
@@ -132,6 +132,11 @@
             <artifactId>opencv</artifactId>
             <version>4.6.0</version>
         </dependency>
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-configuration-processor</artifactId>
+            <optional>true</optional>
+        </dependency>
     </dependencies>
 
     <build>
@@ -239,6 +244,9 @@
                         <configuration>
                             <trimStackTrace>false</trimStackTrace>
                             <enableAssertions>true</enableAssertions>
+                            <excludes>
+                                <exclude>*.properties</exclude>
+                            </excludes>
                         </configuration>
                     </plugin>
                 </plugins>

@@ -102,12 +102,12 @@ public class GalleryViewCard extends ListItem implements LocaleChangeObserver {
         // show image detail info
         detailDialog = new Dialog();
         detailDialog.setModal(false);
-        detailDialog.setHeaderTitle(translator.getTranslation("Image Info", UI.getCurrent().getLocale()));
+        detailDialog.setHeaderTitle(translator.getTranslation("Image-Info", UI.getCurrent().getLocale()));
         detailDialog.setDraggable(true);
         detailDialog.setResizable(true);
 
         // click to show detail dialog
-        detailButton = new Button(translator.getTranslation("View Details", UI.getCurrent().getLocale()));
+        detailButton = new Button(translator.getTranslation("View-Details", UI.getCurrent().getLocale()));
         detailButton.addClickListener(clickEvent -> detailDialog.open());
 
         // show original image and generated image

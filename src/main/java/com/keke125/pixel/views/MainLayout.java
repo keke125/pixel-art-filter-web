@@ -217,7 +217,9 @@ public class MainLayout extends AppLayout implements LocaleChangeObserver {
         aboutViewNav.setLabel(translator.getTranslation("about", UI.getCurrent().getLocale()));
         userProfileViewNav.setLabel(translator.getTranslation("user-profile", UI.getCurrent().getLocale()));
         userManagementViewNav.setLabel(translator.getTranslation("user-management", UI.getCurrent().getLocale()));
-        logout.setText(translator.getTranslation("log-out", UI.getCurrent().getLocale()));
+        if (this.logout != null) {
+            logout.setText(translator.getTranslation("log-out", UI.getCurrent().getLocale()));
+        }
         loginLink.setText(translator.getTranslation("log-in", UI.getCurrent().getLocale()));
     }
 
