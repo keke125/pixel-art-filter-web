@@ -78,8 +78,8 @@ public class UserService {
         return repository.findByUsername(username) == null;
     }
 
-    public boolean isEmailExist(String email) {
-        return !repository.findAllByEmail(email).isEmpty();
+    public boolean isEmailNonExist(String email) {
+        return repository.findAllByEmail(email).isEmpty();
     }
 
 }

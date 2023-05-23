@@ -350,7 +350,7 @@ public class SignupView extends VerticalLayout {
 
     private ValidationResult duplicateEmailValidator(String email, ValueContext ctx) {
 
-        if (!service.isEmailExist(email)) {
+        if (service.isEmailNonExist(email)) {
             return ValidationResult.ok();
         } else {
             return ValidationResult.error(translator.getTranslation("Email-duplicate", UI.getCurrent().getLocale()));
