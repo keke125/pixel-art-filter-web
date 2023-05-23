@@ -4,6 +4,8 @@ import com.keke125.pixel.data.entity.User;
 import com.keke125.pixel.data.service.UserService;
 import com.keke125.pixel.security.AuthenticatedUser;
 import com.keke125.pixel.views.MainLayout;
+import com.keke125.pixel.views.Translator;
+import com.vaadin.flow.component.UI;
 import com.vaadin.flow.component.button.Button;
 import com.vaadin.flow.component.button.ButtonVariant;
 import com.vaadin.flow.component.dependency.Uses;
@@ -17,6 +19,8 @@ import com.vaadin.flow.component.orderedlayout.VerticalLayout;
 import com.vaadin.flow.component.textfield.PasswordField;
 import com.vaadin.flow.data.binder.*;
 import com.vaadin.flow.data.converter.Converter;
+import com.vaadin.flow.i18n.LocaleChangeEvent;
+import com.vaadin.flow.i18n.LocaleChangeObserver;
 import com.vaadin.flow.router.PageTitle;
 import com.vaadin.flow.router.Route;
 import jakarta.annotation.security.RolesAllowed;
@@ -28,7 +32,8 @@ import java.util.Optional;
 @RolesAllowed("USER")
 @Uses(Icon.class)
 @Uses(Icon.class)
-public class UserProfileView extends VerticalLayout {
+public class UserProfileView extends VerticalLayout implements LocaleChangeObserver {
+    private static final Translator translator = new Translator();
     private static UserService service;
     private final PasswordField passwordField1;
     private final PasswordField passwordField2;
@@ -58,15 +63,15 @@ public class UserProfileView extends VerticalLayout {
          * Create the components we'll need
          */
 
-        title = new H3("User Profile");
+        title = new H3(translator.getTranslation("user-profile-update", UI.getCurrent().getLocale()));
 
-        passwordField1 = new PasswordField("Old password");
-        passwordField2 = new PasswordField("New password");
-        passwordField3 = new PasswordField("New password again");
+        passwordField1 = new PasswordField(translator.getTranslation("Old-password", UI.getCurrent().getLocale()));
+        passwordField2 = new PasswordField(translator.getTranslation("New-password", UI.getCurrent().getLocale()));
+        passwordField3 = new PasswordField(translator.getTranslation("New-password-again", UI.getCurrent().getLocale()));
 
         errorMessage = new Span();
 
-        submitButton = new Button("Update profile");
+        submitButton = new Button(translator.getTranslation("Update-profile", UI.getCurrent().getLocale()));
         submitButton.addThemeVariants(ButtonVariant.LUMO_PRIMARY);
 
         /*
@@ -171,7 +176,7 @@ public class UserProfileView extends VerticalLayout {
      * We call this method when form submission has succeeded
      */
     private void showSuccess(User user) {
-        Notification notification = Notification.show(user.getName() + ", your profile have been updated!");
+        Notification notification = Notification.show(String.format(translator.getTranslation("profile-updated", UI.getCurrent().getLocale()), user.getName()));
         notification.addThemeVariants(NotificationVariant.LUMO_SUCCESS);
     }
 
@@ -189,7 +194,7 @@ public class UserProfileView extends VerticalLayout {
             return ValidationResult.ok();
         }
 
-        return ValidationResult.error("Passwords do not match");
+        return ValidationResult.error(translator.getTranslation("Password-dont-match-with-old", UI.getCurrent().getLocale()));
     }
 
     private ValidationResult passwordValidator(String pass2, ValueContext ctx) {
@@ -199,7 +204,7 @@ public class UserProfileView extends VerticalLayout {
          * complexity as well!
          */
         if (pass2 == null || pass2.length() < 8) {
-            return ValidationResult.error("Password should be at least 8 characters long");
+            return ValidationResult.error(translator.getTranslation("Password-length-too-short", UI.getCurrent().getLocale()));
         }
 
         if (!enablePasswordValidation) {
@@ -214,7 +219,16 @@ public class UserProfileView extends VerticalLayout {
             return ValidationResult.ok();
         }
 
-        return ValidationResult.error("Passwords do not match");
+        return ValidationResult.error(translator.getTranslation("Password-dont-match", UI.getCurrent().getLocale()));
+    }
+
+    @Override
+    public void localeChange(LocaleChangeEvent localeChangeEvent) {
+        title.setText(translator.getTranslation("user-profile-update", UI.getCurrent().getLocale()));
+        passwordField1.setLabel(translator.getTranslation("Old-password", UI.getCurrent().getLocale()));
+        passwordField2.setLabel(translator.getTranslation("New-password", UI.getCurrent().getLocale()));
+        passwordField3.setLabel(translator.getTranslation("New-password-again", UI.getCurrent().getLocale()));
+        submitButton.setText(translator.getTranslation("Update-profile", UI.getCurrent().getLocale()));
     }
 
     public static class passwordConverter implements Converter<String, String> {
