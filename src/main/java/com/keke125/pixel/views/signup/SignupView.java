@@ -41,6 +41,7 @@ import java.util.Set;
 public class SignupView extends VerticalLayout {
 
     private static UserService service;
+    private static final Translator translator = new Translator();
     private final PasswordField passwordField1;
     private final PasswordField passwordField2;
     private final BeanValidationBinder<User> binder;
@@ -58,6 +59,11 @@ public class SignupView extends VerticalLayout {
     private final MemoryBuffer memoryBuffer;
     private final UploadTCI18N uploadTCI18N;
     private final UploadENI18N uploadENI18N;
+    // only file size below 3MB can be uploaded
+    // you can modify this value, but the limit is 2047MB
+    private final int maxFileSizeInMegaBytes = 3;
+    private final int maxFileSizeInBytes = maxFileSizeInMegaBytes * 1024 * 1024;
+    private final Span dropLabel;
     private final EmailField emailField;
     private final Span errorMessage;
     private final Button submitButton;
@@ -74,10 +80,10 @@ public class SignupView extends VerticalLayout {
          * Create the components we'll need
          */
 
-        title = new H3("Signup form");
+        title = new H3(translator.getTranslation("Sign-up", UI.getCurrent().getLocale()));
 
-        usernameField = new TextField("User name");
-        nameField = new TextField("Name");
+        usernameField = new TextField(translator.getTranslation("User-name", UI.getCurrent().getLocale()));
+        nameField = new TextField(translator.getTranslation("Name", UI.getCurrent().getLocale()));
 
         // upload field
         upload = new Upload();
@@ -93,12 +99,9 @@ public class SignupView extends VerticalLayout {
 
         // only image file can be uploaded
         upload.setAcceptedFileTypes("image/*");
-        // only file size below 10MB can be uploaded
-        int maxFileSizeInBytes = 3 * 1024 * 1024;
-        int maxFileSizeInMegaBytes = 3;
         upload.setMaxFileSize(maxFileSizeInBytes);
         // upload drop label
-        Span dropLabel = new Span("檔案將上傳至我們的伺服器，可參考我們的隱私權政策\n" + "檔案大小不能超過" + maxFileSizeInMegaBytes + "MB，只能上傳圖片檔");
+        dropLabel = new Span(String.format(translator.getTranslation("upload-single-hint", UI.getCurrent().getLocale()), maxFileSizeInMegaBytes));
         upload.setDropLabel(dropLabel);
         // succeed upload
         upload.addSucceededListener(event -> {
@@ -124,7 +127,7 @@ public class SignupView extends VerticalLayout {
                     }
                     System.out.printf("User Avatar %s image saved.%n", usernameField.getValue());
                 } else {
-                    String errorMessage = String.format("因為上傳檔案 %s 非圖片，請刪除舊檔再重新上傳圖片", uploadFileName);
+                    String errorMessage = String.format(translator.getTranslation("non-image-upload-failed", UI.getCurrent().getLocale()), uploadFileName);
                     Notification notification = Notification.show(errorMessage, 5000,
                             Notification.Position.BOTTOM_CENTER);
                     notification.addThemeVariants(NotificationVariant.LUMO_ERROR);
@@ -135,7 +138,7 @@ public class SignupView extends VerticalLayout {
                     }
                 }
             } else {
-                String errorMessage = String.format("因為無法辨識上傳檔案 %s 類型，請刪除舊檔再重新上傳圖片", uploadFileName);
+                String errorMessage = String.format(translator.getTranslation("non-recognized-upload-failed", UI.getCurrent().getLocale(), uploadFileName));
                 Notification notification = Notification.show(errorMessage, 5000,
                         Notification.Position.BOTTOM_CENTER);
                 notification.addThemeVariants(NotificationVariant.LUMO_ERROR);
@@ -161,14 +164,14 @@ public class SignupView extends VerticalLayout {
         });
 
         // We'll need these fields later on so let's store them as class variables
-        emailField = new EmailField("Email");
+        emailField = new EmailField(translator.getTranslation("Email", UI.getCurrent().getLocale()));
 
-        passwordField1 = new PasswordField("Wanted password");
-        passwordField2 = new PasswordField("Password again");
+        passwordField1 = new PasswordField(translator.getTranslation("Password", UI.getCurrent().getLocale()));
+        passwordField2 = new PasswordField(translator.getTranslation("Password-again", UI.getCurrent().getLocale()));
 
         errorMessage = new Span();
 
-        submitButton = new Button("Sign up");
+        submitButton = new Button(translator.getTranslation("Sign-up", UI.getCurrent().getLocale()));
         submitButton.addThemeVariants(ButtonVariant.LUMO_PRIMARY);
 
         /*
@@ -227,7 +230,7 @@ public class SignupView extends VerticalLayout {
         // 'withValidator(Validator)'; this method allows 'asRequired' to
         // be conditional instead of always on. We don't want to require the email if
         // the user declines marketing messages.
-        binder.forField(emailField).asRequired().withValidator(new EmailValidator("Value is not a valid email address")).withValidator(this::duplicateEmailValidator).bind("email");
+        binder.forField(emailField).asRequired().withValidator(new EmailValidator(translator.getTranslation("Invalid-email", UI.getCurrent().getLocale()))).withValidator(this::duplicateEmailValidator).bind("email");
 
         // Another custom validator, this time for passwords
         binder.forField(passwordField1).asRequired().withValidator(this::passwordValidator).withConverter(new passwordConverter()).bind("hashedPassword");
@@ -298,7 +301,7 @@ public class SignupView extends VerticalLayout {
      * We call this method when form submission has succeeded
      */
     private void showSuccess(User detailsBean) {
-        Notification notification = Notification.show("Data saved, welcome " + detailsBean.getName());
+        Notification notification = Notification.show(String.format(translator.getTranslation("Welcome-message", UI.getCurrent().getLocale()), detailsBean.getName()));
         notification.addThemeVariants(NotificationVariant.LUMO_SUCCESS);
 
         // Here you'd typically redirect the user to another view
@@ -318,7 +321,7 @@ public class SignupView extends VerticalLayout {
          * complexity as well!
          */
         if (pass1 == null || pass1.length() < 8) {
-            return ValidationResult.error("Password should be at least 8 characters long");
+            return ValidationResult.error(translator.getTranslation("Password-length-too-short", UI.getCurrent().getLocale()));
         }
 
         if (!enablePasswordValidation) {
@@ -333,7 +336,7 @@ public class SignupView extends VerticalLayout {
             return ValidationResult.ok();
         }
 
-        return ValidationResult.error("Passwords do not match");
+        return ValidationResult.error(translator.getTranslation("Password-dont-match", UI.getCurrent().getLocale()));
     }
 
     private ValidationResult duplicateUsernameValidator(String username, ValueContext ctx) {
@@ -341,7 +344,7 @@ public class SignupView extends VerticalLayout {
         if (service.isUsernameNonExist(username)) {
             return ValidationResult.ok();
         } else {
-            return ValidationResult.error("The username has already been taken. Please try a different one.");
+            return ValidationResult.error(translator.getTranslation("Username-duplicate", UI.getCurrent().getLocale()));
         }
     }
 
@@ -350,7 +353,7 @@ public class SignupView extends VerticalLayout {
         if (!service.isEmailExist(email)) {
             return ValidationResult.ok();
         } else {
-            return ValidationResult.error("The email has already been taken. Please try a different one.");
+            return ValidationResult.error(translator.getTranslation("Email-duplicate", UI.getCurrent().getLocale()));
         }
     }
 

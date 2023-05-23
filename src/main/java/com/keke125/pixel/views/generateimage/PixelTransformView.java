@@ -245,7 +245,7 @@ public class PixelTransformView extends Div implements LocaleChangeObserver, Bef
         multiFileUpload.setMaxFiles(maxFiles);
         multiFileUpload.setMaxFileSize(maxFileSizeInBytes);
         // upload hint message
-        hint.setText(String.format(translator.getTranslation("upload-hint", UI.getCurrent().getLocale()), maxFileSizeInMegaBytes, maxFiles));
+        hint.setText(String.format(translator.getTranslation("upload-multiple-hint", UI.getCurrent().getLocale()), maxFileSizeInMegaBytes, maxFiles));
         add(hint);
         // upload drop label
         dropLabel.setText(translator.getTranslation("upload-notification", UI.getCurrent().getLocale()));
@@ -431,7 +431,7 @@ public class PixelTransformView extends Div implements LocaleChangeObserver, Bef
         saturation.setTooltipText(translator.getTranslation("saturation-tooltip", UI.getCurrent().getLocale()));
         contrastRatio.setLabel(translator.getTranslation("Contras-ratio", UI.getCurrent().getLocale()));
         contrastRatio.setTooltipText(translator.getTranslation("contrastRatio-tooltip", UI.getCurrent().getLocale()));
-        hint.setText(String.format(translator.getTranslation("upload-hint", UI.getCurrent().getLocale()), maxFileSizeInMegaBytes, maxFiles));
+        hint.setText(String.format(translator.getTranslation("upload-multiple-hint", UI.getCurrent().getLocale()), maxFileSizeInMegaBytes, maxFiles));
         dropLabel.setText(translator.getTranslation("upload-notification", UI.getCurrent().getLocale()));
         save.setText(translator.getTranslation("save", UI.getCurrent().getLocale()));
         cancel.setText(translator.getTranslation("cancel", UI.getCurrent().getLocale(), cancel));

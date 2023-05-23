@@ -59,6 +59,8 @@ public class MainLayout extends AppLayout implements LocaleChangeObserver {
     private AppNavItem aboutViewNav;
     private AppNavItem userProfileViewNav;
     private AppNavItem userManagementViewNav;
+    private final Anchor loginLink = new Anchor();
+    private MenuItem logout;
 
 
     public MainLayout(AuthenticatedUser authenticatedUser, AccessAnnotationChecker accessChecker) {
@@ -173,6 +175,8 @@ public class MainLayout extends AppLayout implements LocaleChangeObserver {
             userMenu.setThemeName("tertiary-inline contrast");
 
             MenuItem userName = userMenu.addItem("");
+            logout = userName.getSubMenu().addItem(translator.getTranslation
+                    ("log-out", UI.getCurrent().getLocale()), e -> authenticatedUser.logout());
             Div div = new Div();
             div.add(avatar);
             div.add(user.getName());
@@ -181,11 +185,12 @@ public class MainLayout extends AppLayout implements LocaleChangeObserver {
             div.getElement().getStyle().set("align-items", "center");
             div.getElement().getStyle().set("gap", "var(--lumo-space-s)");
             userName.add(div);
-            userName.getSubMenu().addItem("登出", e -> authenticatedUser.logout());
 
             layout.add(userMenu);
         } else {
-            Anchor loginLink = new Anchor("login", "登入");
+            loginLink.setText(translator.getTranslation
+                    ("log-in", UI.getCurrent().getLocale()));
+            loginLink.setHref("login");
             layout.add(loginLink);
         }
 
@@ -200,7 +205,7 @@ public class MainLayout extends AppLayout implements LocaleChangeObserver {
 
     private String getCurrentPageTitle() {
         PageTitle title = getContent().getClass().getAnnotation(PageTitle.class);
-        return title == null ? "" : translator.getTranslation(title.value().replace(" ", "-"), UI.getCurrent().getLocale());
+        return title == null ? "" : translator.getTranslation(title.value().replace(" ", "-").toLowerCase(), UI.getCurrent().getLocale());
     }
 
     @Override
@@ -212,6 +217,8 @@ public class MainLayout extends AppLayout implements LocaleChangeObserver {
         aboutViewNav.setLabel(translator.getTranslation("about", UI.getCurrent().getLocale()));
         userProfileViewNav.setLabel(translator.getTranslation("user-profile", UI.getCurrent().getLocale()));
         userManagementViewNav.setLabel(translator.getTranslation("user-management", UI.getCurrent().getLocale()));
+        logout.setText(translator.getTranslation("log-out", UI.getCurrent().getLocale()));
+        loginLink.setText(translator.getTranslation("log-in", UI.getCurrent().getLocale()));
     }
 
 }
