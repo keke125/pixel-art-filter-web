@@ -241,7 +241,7 @@ public class PixelTransformView extends Div implements LocaleChangeObserver, Bef
             multiFileUpload.setI18n(uploadENI18N);
         }
         // only image file can be uploaded
-        multiFileUpload.setAcceptedFileTypes("image/bmp", "image/jpeg", "image/webp", "image/x-portable-anymap", "image/x-portable-bitmap", "image/x-portable-graymap", "image/x-portable-pixmap", ".pxm", ".sr", "image/x-cmu-raster", "image/tiff");
+        multiFileUpload.setAcceptedFileTypes("image/png", "image/bmp", "image/jpeg", "image/webp", "image/x-portable-anymap", "image/x-portable-bitmap", "image/x-portable-graymap", "image/x-portable-pixmap", ".pxm", ".sr", "image/x-cmu-raster", "image/tiff");
         multiFileUpload.setMaxFiles(appConfig.getMaxImageFiles());
         multiFileUpload.setMaxFileSize(maxImageSizeInBytes);
         // upload hint message
