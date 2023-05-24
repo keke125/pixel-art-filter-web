@@ -43,9 +43,9 @@ public class User extends AbstractEntity implements UserDetails {
     @Enumerated(EnumType.STRING)
     @ElementCollection(fetch = FetchType.EAGER)
     private Set<Role> roles;
-    // if avatar is more than 3MB, need to modify column length
+    // if avatar is more than 5MB, need to modify column length
     @Lob
-    @Column(length = 3200000)
+    @Column(length = 5242880)
     private byte[] avatarImage;
     private String avatarImageName;
     @NotNull
