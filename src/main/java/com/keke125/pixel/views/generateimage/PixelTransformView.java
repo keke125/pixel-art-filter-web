@@ -117,7 +117,6 @@ public class PixelTransformView extends Div implements LocaleChangeObserver, Bef
         confirmDialog = new ConfirmDialog();
         addClassName("pixel-transform-view");
 
-        //add(createTitle());
         add(setParameterTitle);
         add(createFormLayout());
         add(uploadImageTitle);
@@ -127,7 +126,18 @@ public class PixelTransformView extends Div implements LocaleChangeObserver, Bef
         clearForm();
 
         cancel.addClickListener(e -> {
+                    if (!imageFileMap.isEmpty()) {
+                        for (String s : imageFileMap.keySet()) {
+                            if (imageFileMap.get(s).delete()) {
+                                System.out.printf("Unsaved image %s have been deleted.\n", s);
+                            } else {
+                                System.err.printf("Failed to delete image %s.\n", s);
+                            }
+                        }
+                        imageFileMap.clear();
+                    }
                     clearForm();
+                    multiFileUpload.clearFileList();
                     isSaved = false;
                 }
         );
@@ -169,6 +179,7 @@ public class PixelTransformView extends Div implements LocaleChangeObserver, Bef
             }
             isSaved = true;
             clearForm();
+            multiFileUpload.clearFileList();
         });
     }
 
@@ -479,7 +490,8 @@ public class PixelTransformView extends Div implements LocaleChangeObserver, Bef
                     }
                     imageFileMap.clear();
                 }
-                UI.getCurrent().getPage().reload();
+                clearForm();
+                multiFileUpload.clearFileList();
             });
             confirmDialog.addConfirmListener(e -> {
                 if (!imageFileMap.isEmpty()) {
@@ -519,6 +531,7 @@ public class PixelTransformView extends Div implements LocaleChangeObserver, Bef
                 }
                 isSaved = true;
                 clearForm();
+                multiFileUpload.clearFileList();
             });
             confirmDialog.open();
         }

@@ -14,6 +14,9 @@ import com.vaadin.flow.router.internal.RouteUtil;
 import com.vaadin.flow.server.VaadinService;
 import com.vaadin.flow.server.auth.AnonymousAllowed;
 import com.vaadin.flow.component.UI;
+import jakarta.servlet.http.Cookie;
+
+import java.util.Locale;
 
 @AnonymousAllowed
 @PageTitle("Login")
@@ -24,6 +27,7 @@ public class LoginView extends LoginOverlay implements BeforeEnterObserver {
     private final AuthenticatedUser authenticatedUser;
     private final LoginI18n.Header headerTC;
     private final LoginI18n.Header headerEN;
+    private static final Translator translator = new Translator();
 
     public LoginView(AppConfig appConfig, AuthenticatedUser authenticatedUser) {
         this.appConfig = appConfig;
@@ -66,7 +70,7 @@ public class LoginView extends LoginOverlay implements BeforeEnterObserver {
         i18nEN.setForm(loginFormEN);
         // support message
         i18nEN.setAdditionalInformation(this.appConfig.getLoginInfoEN());
-        if (UI.getCurrent().getLocale().equals(Translator.LOCALE_ZHT)) {
+        if (checkLanguage().equals(Translator.LOCALE_ZHT)) {
             setI18n(i18nTC);
         } else {
             setI18n(i18nEN);
@@ -86,5 +90,26 @@ public class LoginView extends LoginOverlay implements BeforeEnterObserver {
         }
 
         setError(event.getLocation().getQueryParameters().getParameters().containsKey("error"));
+    }
+
+    private Locale checkLanguage() {
+        String value = getLanguageCookieValue();
+        if (value == null) {
+            return UI.getCurrent().getLocale();
+        }
+        if (value.equals(Translator.LOCALE_ZHT.getLanguage())) {
+            return Translator.LOCALE_ZHT;
+        } else {
+            return translator.getProvidedLocales().get(0);
+        }
+    }
+
+    private String getLanguageCookieValue() {
+        for (Cookie c : VaadinService.getCurrentRequest().getCookies()) {
+            if ("language".equals(c.getName())) {
+                return c.getValue();
+            }
+        }
+        return null;
     }
 }

@@ -26,7 +26,9 @@ import com.vaadin.flow.data.validator.EmailValidator;
 import com.vaadin.flow.dom.DomEventListener;
 import com.vaadin.flow.router.PageTitle;
 import com.vaadin.flow.router.Route;
+import com.vaadin.flow.server.VaadinService;
 import com.vaadin.flow.server.auth.AnonymousAllowed;
+import jakarta.servlet.http.Cookie;
 import org.apache.tika.Tika;
 import org.springframework.beans.factory.annotation.Autowired;
 
@@ -34,6 +36,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.util.Arrays;
 import java.util.HashSet;
+import java.util.Locale;
 import java.util.Set;
 
 @AnonymousAllowed
@@ -81,28 +84,25 @@ public class SignupView extends VerticalLayout {
         this.maxFileSizeInBytes = this.appConfig.getMaxAvatarSizeInMegaBytes() * 1024 * 1024;
         this.defaultImageSizeLimit = this.appConfig.getNewSignupImageSizeLimit();
         newUser = new User();
-
-        /*
-         * Create the components we'll need
-         */
-
-        title = new H3(translator.getTranslation("Sign-up", UI.getCurrent().getLocale()));
-
-        usernameField = new TextField(translator.getTranslation("User-name", UI.getCurrent().getLocale()));
-        nameField = new TextField(translator.getTranslation("Name", UI.getCurrent().getLocale()));
-
         // upload field
         upload = new Upload();
         memoryBuffer = new MemoryBuffer();
         // setup upload i18n
         uploadTCI18N = new UploadTCI18N();
         uploadENI18N = new UploadENI18N();
-        if (UI.getCurrent().getLocale().equals(Translator.LOCALE_ZHT)) {
+        // setup language and theme from cookie
+        if (checkLanguage().equals(Translator.LOCALE_ZHT)) {
             upload.setI18n(uploadTCI18N);
         } else {
             upload.setI18n(uploadENI18N);
         }
-
+        UI.getCurrent().setLocale(checkLanguage());
+        /*
+         * Create the components we'll need
+         */
+        title = new H3(translator.getTranslation("Sign-up", UI.getCurrent().getLocale()));
+        usernameField = new TextField(translator.getTranslation("User-name", UI.getCurrent().getLocale()));
+        nameField = new TextField(translator.getTranslation("Name", UI.getCurrent().getLocale()));
         // only image file can be uploaded
         upload.setAcceptedFileTypes("image/*");
         upload.setMaxFileSize(maxFileSizeInBytes);
@@ -424,5 +424,26 @@ public class SignupView extends VerticalLayout {
         public String convertToPresentation(String fieldValue, ValueContext valueContext) {
             return service.getPasswordEncoder().encode(fieldValue);
         }
+    }
+
+    private Locale checkLanguage() {
+        String value = getLanguageCookieValue();
+        if (value == null) {
+            return UI.getCurrent().getLocale();
+        }
+        if (value.equals(Translator.LOCALE_ZHT.getLanguage())) {
+            return Translator.LOCALE_ZHT;
+        } else {
+            return translator.getProvidedLocales().get(0);
+        }
+    }
+
+    private String getLanguageCookieValue() {
+        for (Cookie c : VaadinService.getCurrentRequest().getCookies()) {
+            if ("language".equals(c.getName())) {
+                return c.getValue();
+            }
+        }
+        return null;
     }
 }

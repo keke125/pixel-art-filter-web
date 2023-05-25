@@ -9,6 +9,7 @@ import com.keke125.pixel.views.gallery.GalleryView;
 import com.keke125.pixel.views.generateimage.PixelTransformView;
 import com.keke125.pixel.views.usermanagement.UserManagementView;
 import com.keke125.pixel.views.userprofile.UserProfileView;
+import com.vaadin.flow.component.AttachEvent;
 import com.vaadin.flow.component.UI;
 import com.vaadin.flow.component.applayout.AppLayout;
 import com.vaadin.flow.component.applayout.DrawerToggle;
@@ -31,6 +32,7 @@ import com.vaadin.flow.i18n.LocaleChangeEvent;
 import com.vaadin.flow.i18n.LocaleChangeObserver;
 import com.vaadin.flow.router.PageTitle;
 import com.vaadin.flow.server.StreamResource;
+import com.vaadin.flow.server.VaadinService;
 import com.vaadin.flow.server.auth.AccessAnnotationChecker;
 import com.vaadin.flow.theme.lumo.Lumo;
 import com.vaadin.flow.theme.lumo.LumoUtility;
@@ -39,6 +41,7 @@ import java.io.ByteArrayInputStream;
 import java.util.Locale;
 import java.util.Optional;
 
+import jakarta.servlet.http.Cookie;
 import org.vaadin.lineawesome.LineAwesomeIcon;
 
 /**
@@ -52,6 +55,7 @@ public class MainLayout extends AppLayout implements LocaleChangeObserver {
     private final AccessAnnotationChecker accessChecker;
 
     private static final Translator translator = new Translator();
+    private Button themeButton;
     private final Select<Locale> selectLanguage = new Select<>();
     // Navigation
     private AppNavItem galleryViewNav;
@@ -86,20 +90,15 @@ public class MainLayout extends AppLayout implements LocaleChangeObserver {
         // check is current language available
         // if not available, using the first available language
         if (translator.getProvidedLocales().contains(UI.getCurrent().getLocale())) {
-            selectLanguage.setValue(UI.getCurrent().getLocale());
+            selectLanguage(UI.getCurrent().getLocale());
         } else {
-            selectLanguage.setValue(translator.getProvidedLocales().get(0));
+            selectLanguage(translator.getProvidedLocales().get(0));
         }
-        selectLanguage.addValueChangeListener(e -> UI.getCurrent().setLocale(e.getValue()));
+        // selectLanguage.addValueChangeListener(e -> UI.getCurrent().setLocale(e.getValue()));
+        selectLanguage.addValueChangeListener(e -> selectLanguage(e.getValue()));
         // switch between light and dark theme
-        Button themeButton = new Button(new Icon(VaadinIcon.ADJUST), click -> {
-            ThemeList themeList = UI.getCurrent().getElement().getThemeList();
-            if (themeList.contains(Lumo.DARK)) {
-                themeList.remove(Lumo.DARK);
-            } else {
-                themeList.add(Lumo.DARK);
-            }
-        });
+        themeButton = new Button(new Icon(VaadinIcon.ADJUST));
+        themeButton.addClickListener(e -> toggleTheme());
         // set selectLanguage on right
         selectLanguage.getStyle().set("margin-left", "auto");
         selectLanguage.addClassNames(LumoUtility.Margin.MEDIUM);
@@ -221,6 +220,107 @@ public class MainLayout extends AppLayout implements LocaleChangeObserver {
             logout.setText(translator.getTranslation("log-out", UI.getCurrent().getLocale()));
         }
         loginLink.setText(translator.getTranslation("log-in", UI.getCurrent().getLocale()));
+    }
+
+    private void setThemeFromCookie() {
+        ThemeList themeList = UI.getCurrent().getElement().getThemeList();
+        if (isLightThemeOn()) {
+            themeList.remove(Lumo.DARK);
+            themeList.add(Lumo.LIGHT);
+        } else {
+            themeList.remove(Lumo.LIGHT);
+            themeList.add(Lumo.DARK);
+        }
+    }
+
+    private void setLanguageFromCookie() {
+        UI.getCurrent().setLocale(checkLanguage());
+        selectLanguage.setValue(checkLanguage());
+    }
+
+    private void toggleTheme() {
+        boolean saveLightTheme = true;
+        ThemeList themeList = UI.getCurrent().getElement().getThemeList();
+        if (themeList.contains(Lumo.DARK)) {
+            themeList.remove(Lumo.DARK);
+            themeList.add(Lumo.LIGHT);
+        } else {
+            themeList.remove(Lumo.LIGHT);
+            themeList.add(Lumo.DARK);
+            saveLightTheme = false;
+        }
+        setLightThemeInCookie(saveLightTheme);
+    }
+
+    private void selectLanguage(Locale locale) {
+        setLanguageInCookie(locale);
+        UI.getCurrent().setLocale(locale);
+        selectLanguage.setValue(locale);
+    }
+
+
+    private void setLightThemeInCookie(boolean b) {
+        Cookie myCookie = new Cookie("light-mode", b ? "true" : "false");
+        // Make cookie expire in 2 minutes
+        myCookie.setMaxAge(3600);
+        myCookie.setPath(VaadinService.getCurrentRequest().getContextPath());
+        VaadinService.getCurrentResponse().addCookie(myCookie);
+    }
+
+    private void setLanguageInCookie(Locale locale) {
+        String language = locale.getLanguage();
+        Cookie myCookie = new Cookie("language", language);
+        // Make cookie expire in 60 minutes
+        myCookie.setMaxAge(3600);
+        myCookie.setPath(VaadinService.getCurrentRequest().getContextPath());
+        VaadinService.getCurrentResponse().addCookie(myCookie);
+    }
+
+    private String getLightModeCookieValue() {
+        for (Cookie c : VaadinService.getCurrentRequest().getCookies()) {
+            if ("light-mode".equals(c.getName())) {
+                return c.getValue();
+            }
+        }
+        return null;
+    }
+
+    private String getLanguageCookieValue() {
+        for (Cookie c : VaadinService.getCurrentRequest().getCookies()) {
+            if ("language".equals(c.getName())) {
+                return c.getValue();
+            }
+        }
+        return null;
+    }
+
+    private boolean isLightThemeOn() {
+        String value = getLightModeCookieValue();
+        if (value == null) {
+            setLightThemeInCookie(true);
+            return true;
+        }
+        return "true".equals(value);
+    }
+
+    private Locale checkLanguage() {
+        String value = getLanguageCookieValue();
+        if (value == null) {
+            setLanguageInCookie(UI.getCurrent().getLocale());
+            return UI.getCurrent().getLocale();
+        }
+        if (value.equals(Translator.LOCALE_ZHT.getLanguage())) {
+            return Translator.LOCALE_ZHT;
+        } else {
+            return translator.getProvidedLocales().get(0);
+        }
+    }
+
+    @Override
+    protected void onAttach(AttachEvent attachEvent) {
+        setThemeFromCookie();
+        setLanguageFromCookie();
+        super.onAttach(attachEvent);
     }
 
 }
