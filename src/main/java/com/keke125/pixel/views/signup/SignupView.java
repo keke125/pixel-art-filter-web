@@ -29,7 +29,6 @@ import com.vaadin.flow.router.Route;
 import com.vaadin.flow.server.auth.AnonymousAllowed;
 import org.apache.tika.Tika;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -67,7 +66,7 @@ public class SignupView extends VerticalLayout {
     // The default image size limit for new sign-up users
     // you can modify this value
     // @Value("{user.image.size.limit:30}")
-    private double defaultImageSizeLimit;
+    private final double defaultImageSizeLimit;
     private final Span dropLabel;
     private final EmailField emailField;
     private final Span errorMessage;
