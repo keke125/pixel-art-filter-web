@@ -1,4 +1,10 @@
-FROM eclipse-temurin:17-jre
-COPY target/*.jar app.jar
+FROM eclipse-temurin:17-jdk
+MAINTAINER admin@keke125.com
+
+COPY opencv/docker-linux-install.sh /app/docker-linux-install.sh
+
+RUN ["chmod", "+x", "/app/docker-linux-install.sh"]
+RUN /app/docker-linux-install.sh
+COPY target/*.jar /app/pafw.jar
 EXPOSE 8080
-ENTRYPOINT ["java", "-jar", "/app.jar"]
+ENTRYPOINT ["java","-Djava.library.path=/app", "-jar", "/app/pafw.jar"]
