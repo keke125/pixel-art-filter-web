@@ -1,0 +1,40 @@
+version: "3"
+
+networks:
+  pafw:
+    external: false
+
+services:
+  server:
+    image: keke125/pixel-art-filter-web:latest
+    container_name: pafw
+    environment:
+      - USER_UID=1000
+      - USER_GID=1000
+      - PAFW_DB_URL=jdbc:mariadb://db:3306/pafw
+      - PAFW_DB_USER=pafw
+      - PAFW_DB_PASSWORD=changeme
+      - spring_jpa_database_platform=org.hibernate.dialect.MariaDBDialect
+      - spring_jpa_hibernate_ddl-auto=update
+    restart: always
+    networks:
+      - pafw
+    volumes:
+      - /path/to/pafw/images:/app/images
+    ports:
+      - "8080:8080"
+    depends_on:
+      - db
+
+  db:
+    image: mariadb:10.11
+    restart: always
+    environment:
+      - MARIADB_ROOT_PASSWORD=pafw
+      - MARIADB_USER=pafw
+      - MARIADB_PASSWORD=changeme
+      - MARIADB_DATABASE=pafw
+    networks:
+      - pafw
+    volumes:
+      - /path/to/pafw/mariadb:/var/lib/mysql
