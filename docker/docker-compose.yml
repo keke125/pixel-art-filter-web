@@ -30,7 +30,7 @@ services:
     image: mariadb:10.11
     restart: always
     environment:
-      - MARIADB_ROOT_PASSWORD=pafw
+      - MARIADB_ROOT_PASSWORD=changeme
       - MARIADB_USER=pafw
       - MARIADB_PASSWORD=changeme
       - MARIADB_DATABASE=pafw

@@ -6,7 +6,7 @@
     <groupId>com.keke125.pixel</groupId>
     <artifactId>pixel-art-filter-web</artifactId>
     <name>pixel-art-filter-web</name>
-    <version>1.1.0</version>
+    <version>1.1.1</version>
     <packaging>jar</packaging>
 
     <properties>
@@ -91,7 +91,7 @@
         <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-maven-plugin</artifactId>
-            <version>3.0.6</version>
+            <version>3.1.0</version>
         </dependency>
         <dependency>
             <groupId>org.springframework.boot</groupId>
@@ -126,11 +126,18 @@
             <artifactId>bcprov-jdk18on</artifactId>
             <version>1.73</version>
         </dependency>
-        <!-- https://mvnrepository.com/artifact/opencv/opencv -->
+        <!-- https://mvnrepository.com/artifact/opencv/opencv
         <dependency>
             <groupId>org</groupId>
             <artifactId>opencv</artifactId>
             <version>4.6.0</version>
+        </dependency>
+        -->
+        <!-- https://mvnrepository.com/artifact/org.openpnp/opencv -->
+        <dependency>
+            <groupId>org.openpnp</groupId>
+            <artifactId>opencv</artifactId>
+            <version>4.6.0-0</version>
         </dependency>
         <dependency>
             <groupId>org.springframework.boot</groupId>

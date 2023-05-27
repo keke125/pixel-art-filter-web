@@ -9,7 +9,6 @@ import com.vaadin.flow.data.binder.ValidationException;
 import org.apache.commons.codec.digest.DigestUtils;
 import org.apache.commons.io.FilenameUtils;
 import org.apache.tika.Tika;
-import org.opencv.core.Core;
 import org.opencv.core.Mat;
 import org.opencv.imgcodecs.Imgcodecs;
 import org.springframework.stereotype.Service;
@@ -67,7 +66,8 @@ public class ImageService {
 
 
     public void imageProcess(ImageInfo entity, User user) {
-        System.loadLibrary(Core.NATIVE_LIBRARY_NAME);
+        // System.loadLibrary(Core.NATIVE_LIBRARY_NAME);
+        nu.pattern.OpenCV.loadLocally();
         // time stamp for distinguishing different files
         Instant instantNow = Instant.now();
         // get current directory
