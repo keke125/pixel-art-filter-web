@@ -18,6 +18,14 @@ jobs:
   build:
 
     runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        platform:
+          - linux/amd64
+          - linux/arm/v6
+          - linux/arm/v7
+          - linux/arm64
 
     steps:
     - uses: actions/checkout@v3
@@ -34,6 +42,7 @@ jobs:
       with:
         java-version: '17'
         distribution: 'temurin'
+        java-package: 'jre'
         cache: maven
     - name: Build with Maven
       run: ./mvnw clean package -Pproduction
