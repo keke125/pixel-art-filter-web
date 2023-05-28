@@ -42,7 +42,6 @@ jobs:
       with:
         java-version: '17'
         distribution: 'temurin'
-        java-package: 'jre'
         cache: maven
     - name: Build with Maven
       run: ./mvnw clean package -Pproduction
