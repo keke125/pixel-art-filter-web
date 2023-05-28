@@ -46,6 +46,12 @@ java -jar /path/to/.jar
 
 接著請在瀏覽器開啟 http://localhost:8080，請注意，如果你有調整監聽端口，請將8080換成你自訂的端口
 
+初始的管理員帳號密碼為 admin/admin ，請登入後至使用者檔案更改密碼
+
+另外請注意使用者的圖片計算將只計算使用者上傳的圖片，生成後的效果圖大小並不會被計入，請在設定每位使用者的上限時特別留意
+
+根據實測，通常生成後的圖片大小與原圖相比都不會太大
+
 ## 資料庫
 
 本專案使用 MariaDB，原則上你可方便的更改成你慣用的資料庫，請參考 Spring Data JPA 相關設定
@@ -95,7 +101,27 @@ OpenCV 根據作業系統、CPU架構的不同，會需要不同的檔案
 mvn install:install-file -Dfile=/path/to/opencv/jarfile -DgroupId=org -DartifactId=opencv -Dversion=4.6.0 -Dpackaging=jar
 ```
 
-並將
+並將 pom.xml 當中的
+
+```xml
+        <!-- https://mvnrepository.com/artifact/org.openpnp/opencv -->
+<dependency>
+    <groupId>org.openpnp</groupId>
+    <artifactId>opencv</artifactId>
+    <version>4.6.0-0</version>
+</dependency>
+```
+
+替換成
+
+```xml
+        <!-- https://mvnrepository.com/artifact/opencv/opencv -->
+<dependency>
+    <groupId>org</groupId>
+    <artifactId>opencv</artifactId>
+    <version>4.6.0</version>
+</dependency>
+```
 
 除了安裝為maven的依賴外，你還需要設定載入程式庫 (native libraries) 的路徑，也就是存放 .dll (Windows) 或 .jar (Linux) 的資料夾
 
@@ -123,9 +149,99 @@ java -Djava.library.path=/path/to/.so -jar /path/to/.jar
 的程式碼，將 `nu.pattern.OpenCV.loadLocally();` 替換成 `System.loadLibrary(Core.NATIVE_LIBRARY_NAME);`
 並 import OpenCV `import org.opencv.core.Core;`
 
+## 檔案結構參考，其中pafw為程式根目錄
+
+```bash=
+.
+└── pafw
+    ├── application.properties
+    ├── pixel-art-filter-web-1.x.x.jar
+    └── opencv_java460.dll / libopencv_java460.so  (Optional)
+```
+
 ## 設定配置檔
 
-TODO
+- PAFW_DB_URL
+
+資料庫路徑，例如 `jdbc:mariadb://db:3306/pafw` 其中 pafw 為資料庫名稱
+
+- PAFW_DB_USER
+
+資料庫使用者，例如 `pafw`
+
+- PAFW_DB_PASSWORD
+
+資料庫使用者密碼，例如 `changeme`
+
+- spring.jpa.hibernate.ddl-auto
+
+如果要在程式停止時刪除資料庫，請使用 `create-drop` ，適合開發環境
+如果要在程式停止時保留資料庫，請使用 `update` ，適合生產環境
+
+- spring.servlet.multipart.max-file-size
+
+如果有調整上傳限制，請一併調整至單次最大上傳檔案總和，如`30MB`
+
+- spring.servlet.multipart.max-request-size
+
+如果有調整上傳限制，請一併調整至單次最大上傳檔案總和，如`30MB`
+
+- app.maxImageSizeInMegaBytes
+
+單一檔案最大上傳大小，單位為MB，如`10`，最高上限應為2047
+
+- app.maxImageFiles
+
+單次上傳的檔案數量上限，如`3`
+
+- app.maxAvatarSizeInMegaBytes
+
+使用者頭像的大小限制，單位為MB，如`3`
+
+- app.newSignupImageSizeLimit
+
+使用者註冊時預設的圖片大小總限制，單位為MB，如`30`
+
+- app.idForEncode
+
+要使用何種哈希(Hash)算法計算使用者的密碼，並將計算後的值存入資料庫
+提供`BCrypt`、`pbkdf2`、`argon2`，預設為`argon2`
+
+- app.webCountry
+
+網站所在國家
+
+- app.webNameEN
+
+英文網站名
+
+- app.webNameTC
+
+中文網站名
+
+- app.webDescriptionEN
+
+英文網站敘述，於登入頁面顯示
+
+- app.webDescriptionTC
+
+中文網站敘述，於登入頁面顯示，請注意中文須輸入Unicode字碼，如`\u5982`
+
+- app.webLink
+
+網站網址，如`https://example.com`
+
+- app.adminContactEmail
+
+網站管理員聯絡信箱，如`admin@example.com`
+
+- app.loginInfoTC
+
+中文登入訊息，於登入頁面底部顯示，請注意中文須輸入Unicode字碼，如`\u5982`
+
+- app.loginInfoEN
+
+英文登入訊息，於登入頁面底部顯示
 
 ## Docker 部署
 
