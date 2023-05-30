@@ -19,6 +19,10 @@ Pixel Art Filter Web 為免費且開放原始碼的跨平臺網頁程式，提�
 
 我們提供自行部署的使用者們可自訂的配置，你可透過配置檔調整程式的系統設定，像是監聽的連接埠，密碼選用哪種方式雜湊，上傳檔案的限制...等等。
 
+## Demo
+
+[pafw.eu.org](https://pafw.eu.org) 由 Pixel Art Filter Web 官方維護，提供使用者 Demo。
+
 ## 建置
 
 本專案為 Maven 專案，使用者將原始碼下載到本機後，指令可參考 `git clone https://github.com/keke125/pixel-art-filter-web.git`
@@ -53,7 +57,7 @@ java -jar /path/to/.jar
 
 另外請注意使用者的圖片計算將只計算使用者上傳的圖片，經轉換後的圖片大小並不會被計入，請在設定每位使用者的上限時特別留意，根據實測，通常轉換後的圖片大小與原圖相比都不會太大。
 
-## Docker 部署
+### Docker 部署
 
 參考 [Docker Hub](https://hub.docker.com/r/keke125/pixel-art-filter-web)。
 
@@ -102,7 +106,7 @@ mvn install:install-file -Dfile=/path/to/opencv/jarfile -DgroupId=org -Dartifact
 並將 pom.xml 當中的
 
 ```xml
-        <!-- https://mvnrepository.com/artifact/org.openpnp/opencv -->
+<!-- https://mvnrepository.com/artifact/org.openpnp/opencv -->
 <dependency>
     <groupId>org.openpnp</groupId>
     <artifactId>opencv</artifactId>
@@ -113,7 +117,7 @@ mvn install:install-file -Dfile=/path/to/opencv/jarfile -DgroupId=org -Dartifact
 替換成
 
 ```xml
-        <!-- https://mvnrepository.com/artifact/opencv/opencv -->
+<!-- https://mvnrepository.com/artifact/opencv/opencv -->
 <dependency>
     <groupId>org</groupId>
     <artifactId>opencv</artifactId>
@@ -127,7 +131,7 @@ mvn install:install-file -Dfile=/path/to/opencv/jarfile -DgroupId=org -Dartifact
 
 請在 IDE 外部函式庫 (External Libraries) 設定 OpenCV。
 
-- 生產環境 (打包成jar執行)
+- 生產環境 (打包成JAR執行)
 
 在 Windows 下需要 .dll 檔，請指定 .dll 的路徑。
 
@@ -141,7 +145,7 @@ java -Djava.library.path=\path\to\.dll -jar \path\to\.jar
 java -Djava.library.path=/path/to/.so -jar /path/to/.jar
 ```
 
-請注意，`\path\to\.dll` 及 `/path/to/.so` 需要填的是儲存 .dll 或 .so 的資料夾，`\path\to\.jar` 則需填包含jar檔名的完整路徑。
+請注意，`\path\to\.dll` 及 `/path/to/.so` 需要填的是儲存 .dll 或 .so 的資料夾，`\path\to\.jar` 則需填包含 JAR 檔名的完整路徑。
 
 你還需要調整 `src/main/java/com/keke125/pixel/data/service/ImageService.java`
 程式碼，將 `nu.pattern.OpenCV.loadLocally();` 替換成 `System.loadLibrary(Core.NATIVE_LIBRARY_NAME);`
