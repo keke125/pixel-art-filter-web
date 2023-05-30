@@ -168,6 +168,7 @@ public class PixelTransformView extends Div implements LocaleChangeObserver, Bef
                             }
                         } else {
                             Notification.show(String.format(translator.getTranslation("reached-images-size-limit", UI.getCurrent().getLocale()), entry.getKey()));
+                            multiFileUpload.clearFileList();
                             break;
                         }
                     }
@@ -293,6 +294,7 @@ public class PixelTransformView extends Div implements LocaleChangeObserver, Bef
                             System.out.printf("Tmp File saved to: %s.\n", absolutePath);
                         } else {
                             String errorMessage = String.format(translator.getTranslation("reached-image-size-limit", UI.getCurrent().getLocale()), uploadFileName);
+                            multiFileUpload.clearFileList();
                             Notification notification = Notification.show(errorMessage, 5000,
                                     Notification.Position.BOTTOM_CENTER);
                             notification.addThemeVariants(NotificationVariant.LUMO_ERROR);
@@ -520,6 +522,7 @@ public class PixelTransformView extends Div implements LocaleChangeObserver, Bef
                                 }
                             } else {
                                 Notification.show(String.format(translator.getTranslation("reached-images-size-limit", UI.getCurrent().getLocale()), entry.getKey()));
+                                multiFileUpload.clearFileList();
                                 break;
                             }
                         }

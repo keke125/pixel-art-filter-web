@@ -60,6 +60,7 @@ public class SignupView extends VerticalLayout {
     private final H3 title;
     private final TextField usernameField;
     private final TextField nameField;
+    private final Span avatarLabel;
     private final Upload upload;
     private final MemoryBuffer memoryBuffer;
     private final UploadTCI18N uploadTCI18N;
@@ -108,6 +109,7 @@ public class SignupView extends VerticalLayout {
         upload.setMaxFileSize(maxFileSizeInBytes);
         // upload drop label
         dropLabel = new Span(String.format(translator.getTranslation("upload-single-hint", UI.getCurrent().getLocale()), this.appConfig.getMaxAvatarSizeInMegaBytes()));
+        avatarLabel = new Span(String.format(translator.getTranslation("Avatar", UI.getCurrent().getLocale())));
         upload.setDropLabel(dropLabel);
         upload.setReceiver(memoryBuffer);
         // succeed upload
@@ -188,7 +190,7 @@ public class SignupView extends VerticalLayout {
         // Create a FormLayout with all our components. The FormLayout doesn't have any
         // logic (validation, etc.), but it allows us to configure Responsiveness from
         // Java code and its defaults looks nicer than just using a VerticalLayout.
-        FormLayout formLayout = new FormLayout(title, usernameField, nameField, upload, passwordField1, passwordField2,
+        FormLayout formLayout = new FormLayout(title, usernameField, nameField, avatarLabel, upload, passwordField1, passwordField2,
                 emailField, errorMessage, submitButton);
 
         // Restrict maximum width and center on page
