@@ -91,4 +91,12 @@ public class User extends AbstractEntity implements UserDetails {
     public void setUsernane(String username) {
         this.username = username;
     }
+
+    public Double getImageSize() {
+        if (this.imageSize > 0) {
+            return this.imageSize;
+        } else {
+            return 0.0;
+        }
+    }
 }
