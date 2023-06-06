@@ -173,8 +173,6 @@ public class UserManagementView extends Div implements BeforeEnterObserver, Loca
         delete.setText(translator.getTranslation("Delete", UI.getCurrent().getLocale()));
         delete.addClickListener(e -> {
             if (this.user != null) {
-                user.setImageSizeLimit(0.0);
-                userService.update(user);
                 userService.delete(user.getId());
                 Notification.show(String.format(translator.getTranslation("removed-user", UI.getCurrent().getLocale()), user.getId()));
             } else {

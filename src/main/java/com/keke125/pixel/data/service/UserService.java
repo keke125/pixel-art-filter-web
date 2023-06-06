@@ -40,16 +40,7 @@ public class UserService {
         Optional<User> maybeUser = repository.findById(id);
         if (maybeUser.isPresent()) {
             User user = maybeUser.get();
-            List<ImageInfo> imageInfoList = imageService.findAllImageInfosByOwnerName(user.getUsername());
-            if (!imageInfoList.isEmpty()) {
-                try {
-                    for (ImageInfo imageInfo : imageInfoList) {
-                        imageService.deleteImageInfo(imageInfo, user);
-                    }
-                } catch (RuntimeException e) {
-                    System.err.printf("Can't delete user's (ID: %d) images!", user.getId());
-                }
-            }
+            imageService.deleteAllImageInfoByUser(user);
             repository.deleteById(id);
         }
     }

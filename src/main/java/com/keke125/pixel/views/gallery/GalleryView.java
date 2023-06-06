@@ -42,7 +42,7 @@ public class GalleryView extends Main implements HasComponents, HasStyle, Locale
 
     private final AuthenticatedUser authenticatedUser;
     private User user;
-    private H2 header;
+    private H3 header;
 
     private Label imageSize;
     private Label imageSizeLimit;
@@ -70,7 +70,7 @@ public class GalleryView extends Main implements HasComponents, HasStyle, Locale
         container.addClassNames(AlignItems.CENTER, JustifyContent.BETWEEN);
 
         VerticalLayout headerContainer = new VerticalLayout();
-        header = new H2(translator.getTranslation("Generated-images", UI.getCurrent().getLocale()));
+        header = new H3(translator.getTranslation("Generated-images", UI.getCurrent().getLocale()));
         header.addClassNames(Margin.Bottom.NONE, Margin.Top.XLARGE, FontSize.XXXLARGE);
         headerContainer.add(header);
 

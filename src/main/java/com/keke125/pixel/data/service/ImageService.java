@@ -28,10 +28,8 @@ public class ImageService {
 
     // binder with Class ImageInfo
     private final Binder<ImageInfo> binderImage = new Binder<>(ImageInfo.class);
-    private final Binder<User> binderUser = new Binder<>(User.class);
 
     public ImageService(ImageInfoRepository imageInfoRepository, ImageInfoService imageInfoService, UserService userService) {
-        // this.userRepository = userRepository;
         this.imageInfoRepository = imageInfoRepository;
         this.imageInfoService = imageInfoService;
         this.userService = userService;
@@ -45,25 +43,40 @@ public class ImageService {
         return imageInfoRepository.countByOwnerName(ownerName);
     }
 
-    public void deleteImageInfo(ImageInfo imageInfo, User user) throws RuntimeException {
+    public void deleteImageInfo(ImageInfo imageInfo, User user) {
         File originalFile = new File(imageInfo.getImageOriginalFile());
         File newFile = new File(imageInfo.getImageNewFile());
         Double oldUserImageSize = user.getImageSize();
         Double originalFileSize = (double) originalFile.length() / 1024 / 1024;
+        Long imageInfoId = imageInfo.getId();
+        imageInfoService.delete(imageInfoId);
         if (originalFile.delete() && newFile.delete()) {
-            try {
-                user.setImageSize(oldUserImageSize - originalFileSize);
-                binderUser.writeBean(user);
-                userService.update(user);
-            } catch (ValidationException e) {
-                throw new RuntimeException(e);
-            }
-            imageInfoRepository.delete(imageInfo);
-        } else {
-            throw new RuntimeException("Can't delete images!");
+            user.setImageSize(oldUserImageSize - originalFileSize);
+            userService.update(user);
         }
     }
 
+    public void deleteAllImageInfoByUser(User user) {
+        List<ImageInfo> imageInfoList = imageInfoService.getRepository().findAllByOwnerName(user.getUsername());
+        user.setImageSize(0.0);
+        user.setImageSizeLimit(0.0);
+        userService.update(user);
+        File originalFile;
+        File newFile;
+        if (!imageInfoList.isEmpty()) {
+            try {
+                for (ImageInfo imageInfo : imageInfoList) {
+                    originalFile = new File(imageInfo.getImageOriginalFile());
+                    newFile = new File(imageInfo.getImageNewFile());
+                    if (originalFile.delete() && newFile.delete()) {
+                        imageInfoService.delete(imageInfo.getId());
+                    }
+                }
+            } catch (RuntimeException e) {
+                System.err.printf("Can't delete user's (ID: %d) images!", user.getId());
+            }
+        }
+    }
 
     public void imageProcess(ImageInfo entity, User user) {
         // System.loadLibrary(Core.NATIVE_LIBRARY_NAME);
@@ -112,4 +125,5 @@ public class ImageService {
             return imageInfoRepository.findAllByOwnerName(OwnerName);
         }
     }
+
 }

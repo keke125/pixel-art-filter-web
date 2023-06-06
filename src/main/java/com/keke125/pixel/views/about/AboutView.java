@@ -24,7 +24,7 @@ public class AboutView extends VerticalLayout implements LocaleChangeObserver {
     private final AppConfig appConfig;
 
     private static final Translator translator = new Translator();
-    private final H2 aboutHeader;
+    private final H3 aboutHeader;
     private final H3 githubHeader;
     private final Anchor githubLink;
     private final H3 privacyHeader;
@@ -34,7 +34,7 @@ public class AboutView extends VerticalLayout implements LocaleChangeObserver {
 
     public AboutView(AppConfig appConfig) {
         this.appConfig = appConfig;
-        aboutHeader = new H2(translator.getTranslation("About", UI.getCurrent().getLocale()));
+        aboutHeader = new H3(translator.getTranslation("About", UI.getCurrent().getLocale()));
         aboutHeader.addClassNames(Margin.Top.XLARGE, Margin.Bottom.MEDIUM);
         privacyTextEN = Jsoup.clean("<h1>Privacy Policy</h1>" +
                 "<p>Last updated: May 20, 2023</p>" +

@@ -88,7 +88,7 @@ public class User extends AbstractEntity implements UserDetails {
         return username;
     }
 
-    public void setUsernane(String username) {
+    public void setUsername(@NotNull String username) {
         this.username = username;
     }
 
