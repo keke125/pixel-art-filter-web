@@ -9,7 +9,10 @@ import com.keke125.pixel.views.Translator;
 import com.vaadin.flow.component.HasComponents;
 import com.vaadin.flow.component.HasStyle;
 import com.vaadin.flow.component.UI;
-import com.vaadin.flow.component.html.*;
+import com.vaadin.flow.component.html.H3;
+import com.vaadin.flow.component.html.Label;
+import com.vaadin.flow.component.html.Main;
+import com.vaadin.flow.component.html.OrderedList;
 import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
 import com.vaadin.flow.component.orderedlayout.VerticalLayout;
 import com.vaadin.flow.i18n.LocaleChangeEvent;
@@ -35,28 +38,33 @@ import java.util.Optional;
 @Route(value = "gallery", layout = MainLayout.class)
 @RouteAlias(value = "", layout = MainLayout.class)
 @RolesAllowed("USER")
-public class GalleryView extends Main implements HasComponents, HasStyle, LocaleChangeObserver {
+public class GalleryView extends Main implements HasComponents, HasStyle,
+        LocaleChangeObserver {
+
     private static final Translator translator = new Translator();
 
     private OrderedList imageContainer;
 
-    private final AuthenticatedUser authenticatedUser;
     private User user;
+
     private H3 header;
 
     private Label imageSize;
+
     private Label imageSizeLimit;
 
-    public GalleryView(ImageService imageService, AuthenticatedUser authenticatedUser) {
-        this.authenticatedUser = authenticatedUser;
-        Optional<User> maybeUser = this.authenticatedUser.get();
+    public GalleryView(ImageService imageService,
+                       AuthenticatedUser authenticatedUser) {
+        Optional<User> maybeUser = authenticatedUser.get();
         if (maybeUser.isPresent()) {
             this.user = maybeUser.get();
             constructUI();
-            List<ImageInfo> imageInfoList = imageService.findAllImageInfosByOwnerName(this.user.getUsername());
+            List<ImageInfo> imageInfoList =
+                    imageService.findAllImageInfosByOwnerName(this.user.getUsername());
             if (!imageInfoList.isEmpty()) {
                 for (ImageInfo i : imageInfoList) {
-                    imageContainer.add(new GalleryViewCard(imageService, i, user));
+                    imageContainer.add(new GalleryViewCard(imageService, i,
+                            user));
                 }
             }
         }
@@ -64,21 +72,29 @@ public class GalleryView extends Main implements HasComponents, HasStyle, Locale
 
     private void constructUI() {
         addClassNames("gallery-view");
-        addClassNames(MaxWidth.SCREEN_LARGE, Margin.Horizontal.AUTO, Padding.Bottom.LARGE, Padding.Horizontal.LARGE);
+        addClassNames(MaxWidth.SCREEN_LARGE, Margin.Horizontal.AUTO,
+                Padding.Bottom.LARGE, Padding.Horizontal.LARGE);
 
         HorizontalLayout container = new HorizontalLayout();
         container.addClassNames(AlignItems.CENTER, JustifyContent.BETWEEN);
 
         VerticalLayout headerContainer = new VerticalLayout();
-        header = new H3(translator.getTranslation("Generated-images", UI.getCurrent().getLocale()));
-        header.addClassNames(Margin.Bottom.NONE, Margin.Top.XLARGE, FontSize.XXXLARGE);
+        header = new H3(translator.getTranslation("Generated-images",
+                UI.getCurrent().getLocale()));
+        header.addClassNames(Margin.Bottom.NONE, Margin.Top.XLARGE,
+                FontSize.XXXLARGE);
         headerContainer.add(header);
 
-        imageSize = new Label(translator.getTranslation("Image-size", UI.getCurrent().getLocale()) + ": " + String.format("%sMB", Math.round(user.getImageSize())));
-        imageSizeLimit = new Label(translator.getTranslation("Image-size-limit", UI.getCurrent().getLocale()) + ": " + String.format("%sMB", Math.round(user.getImageSizeLimit())));
+        imageSize = new Label(translator.getTranslation("Image-size",
+                UI.getCurrent().getLocale()) + ": " + String.format("%sMB",
+                Math.round(user.getImageSize())));
+        imageSizeLimit = new Label(translator.getTranslation("Image-size" +
+                "-limit", UI.getCurrent().getLocale()) + ": " + String.format
+                ("%sMB", Math.round(user.getImageSizeLimit())));
 
         imageContainer = new OrderedList();
-        imageContainer.addClassNames(Gap.MEDIUM, Display.GRID, ListStyleType.NONE, Margin.NONE, Padding.NONE);
+        imageContainer.addClassNames(Gap.MEDIUM, Display.GRID,
+                ListStyleType.NONE, Margin.NONE, Padding.NONE);
 
         container.add(headerContainer, imageSize, imageSizeLimit);
         add(container, imageContainer);
@@ -87,8 +103,13 @@ public class GalleryView extends Main implements HasComponents, HasStyle, Locale
 
     @Override
     public void localeChange(LocaleChangeEvent localeChangeEvent) {
-        header.setText(translator.getTranslation("Generated-images", UI.getCurrent().getLocale()));
-        imageSize.setText(translator.getTranslation("Image-size", UI.getCurrent().getLocale()) + ": " + String.format("%sMB", Math.round(user.getImageSize())));
-        imageSizeLimit.setText(translator.getTranslation("Image-size-limit", UI.getCurrent().getLocale()) + ": " + String.format("%sMB", Math.round(user.getImageSizeLimit())));
+        header.setText(translator.getTranslation("Generated-images",
+                UI.getCurrent().getLocale()));
+        imageSize.setText(translator.getTranslation("Image-size",
+                UI.getCurrent().getLocale()) + ": " + String.format("%sMB",
+                Math.round(user.getImageSize())));
+        imageSizeLimit.setText(translator.getTranslation("Image-size-limit",
+                UI.getCurrent().getLocale()) + ": " + String.format("%sMB",
+                Math.round(user.getImageSizeLimit())));
     }
 }

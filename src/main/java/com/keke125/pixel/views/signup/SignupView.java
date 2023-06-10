@@ -44,12 +44,14 @@ import java.util.Set;
 @Route(value = "signup")
 public class SignupView extends VerticalLayout {
 
-    private final AppConfig appConfig;
     private static UserService service;
+
     private static final Translator translator = new Translator();
-    private final PasswordField passwordField1;
+
     private final PasswordField passwordField2;
+
     private final BeanValidationBinder<User> binder;
+
     private final User newUser;
 
     /**
@@ -57,40 +59,30 @@ public class SignupView extends VerticalLayout {
      */
     private boolean enablePasswordValidation;
 
-    private final H3 title;
     private final TextField usernameField;
-    private final TextField nameField;
-    private final Span avatarLabel;
-    private final Upload upload;
-    private final MemoryBuffer memoryBuffer;
-    private final UploadTCI18N uploadTCI18N;
-    private final UploadENI18N uploadENI18N;
 
-    private final int maxFileSizeInBytes;
+    private final MemoryBuffer memoryBuffer;
+
     // The default image size limit for new sign-up users
     // you can modify this value
     // @Value("{user.image.size.limit:30}")
     private final double defaultImageSizeLimit;
-    private final Span dropLabel;
-    private final EmailField emailField;
-    private final Span errorMessage;
-    private final Button submitButton;
 
     /**
      * We use Spring to inject the backend into our view
      */
     public SignupView(AppConfig appConfig, @Autowired UserService service) {
-        this.appConfig = appConfig;
         SignupView.service = service;
-        this.maxFileSizeInBytes = this.appConfig.getMaxAvatarSizeInMegaBytes() * 1024 * 1024;
-        this.defaultImageSizeLimit = this.appConfig.getNewSignupImageSizeLimit();
+        int maxFileSizeInBytes =
+                appConfig.getMaxAvatarSizeInMegaBytes() * 1024 * 1024;
+        this.defaultImageSizeLimit = appConfig.getNewSignupImageSizeLimit();
         newUser = new User();
         // upload field
-        upload = new Upload();
+        Upload upload = new Upload();
         memoryBuffer = new MemoryBuffer();
         // setup upload i18n
-        uploadTCI18N = new UploadTCI18N();
-        uploadENI18N = new UploadENI18N();
+        UploadTCI18N uploadTCI18N = new UploadTCI18N();
+        UploadENI18N uploadENI18N = new UploadENI18N();
         // setup language and theme from cookie
         if (checkLanguage().equals(Translator.LOCALE_ZHT)) {
             upload.setI18n(uploadTCI18N);
@@ -101,15 +93,21 @@ public class SignupView extends VerticalLayout {
         /*
          * Create the components we'll need
          */
-        title = new H3(translator.getTranslation("Sign-up", UI.getCurrent().getLocale()));
-        usernameField = new TextField(translator.getTranslation("User-name", UI.getCurrent().getLocale()));
-        nameField = new TextField(translator.getTranslation("Name", UI.getCurrent().getLocale()));
+        H3 title = new H3(translator.getTranslation("Sign-up",
+                UI.getCurrent().getLocale()));
+        usernameField = new TextField(translator.getTranslation("User-name",
+                UI.getCurrent().getLocale()));
+        TextField nameField = new TextField(translator.getTranslation("Name",
+                UI.getCurrent().getLocale()));
         // only image file can be uploaded
         upload.setAcceptedFileTypes("image/*");
         upload.setMaxFileSize(maxFileSizeInBytes);
         // upload drop label
-        dropLabel = new Span(String.format(translator.getTranslation("upload-single-hint", UI.getCurrent().getLocale()), this.appConfig.getMaxAvatarSizeInMegaBytes()));
-        avatarLabel = new Span(String.format(translator.getTranslation("Avatar", UI.getCurrent().getLocale())));
+        Span dropLabel = new Span(String.format(translator.getTranslation(
+                        "upload-single-hint", UI.getCurrent().getLocale()),
+                appConfig.getMaxAvatarSizeInMegaBytes()));
+        Span avatarLabel = new Span(String.format(translator.getTranslation(
+                "Avatar", UI.getCurrent().getLocale())));
         upload.setDropLabel(dropLabel);
         upload.setReceiver(memoryBuffer);
         // succeed upload
@@ -134,11 +132,17 @@ public class SignupView extends VerticalLayout {
                     } catch (IOException e) {
                         throw new RuntimeException(e);
                     }
-                    System.out.printf("User Avatar %s image saved.%n", usernameField.getValue());
+                    System.out.printf("User Avatar %s image saved.%n",
+                            usernameField.getValue());
                 } else {
-                    String errorMessage = String.format(translator.getTranslation("non-image-upload-failed", UI.getCurrent().getLocale()), uploadFileName);
-                    Notification notification = Notification.show(errorMessage, 5000,
-                            Notification.Position.BOTTOM_CENTER);
+                    String errorMessage =
+                            String.format(translator.getTranslation("non" +
+                                                    "-image-upload-failed",
+                                            UI.getCurrent().getLocale()),
+                                    uploadFileName);
+                    Notification notification =
+                            Notification.show(errorMessage, 5000,
+                                    Notification.Position.BOTTOM_CENTER);
                     notification.addThemeVariants(NotificationVariant.LUMO_ERROR);
                     try {
                         savedInputStream.close();
@@ -147,8 +151,12 @@ public class SignupView extends VerticalLayout {
                     }
                 }
             } else {
-                String errorMessage = String.format(translator.getTranslation("non-recognized-upload-failed", UI.getCurrent().getLocale(), uploadFileName));
-                Notification notification = Notification.show(errorMessage, 5000,
+                String errorMessage =
+                        String.format(translator.getTranslation("non" +
+                                        "-recognized-upload-failed",
+                                UI.getCurrent().getLocale(), uploadFileName));
+                Notification notification = Notification.show(errorMessage,
+                        5000,
                         Notification.Position.BOTTOM_CENTER);
                 notification.addThemeVariants(NotificationVariant.LUMO_ERROR);
                 try {
@@ -158,12 +166,15 @@ public class SignupView extends VerticalLayout {
                 }
             }
         });
-        upload.getElement().addEventListener("file-remove", (DomEventListener) e -> {
-            String removedFileName = e.getEventData().getString("event.detail.file.name");
-            e.getEventData().remove(removedFileName);
-            newUser.setAvatarImage(null);
-            newUser.setAvatarImageName(null);
-        }).addEventData("event.detail.file.name");
+        upload.getElement().addEventListener("file-remove",
+                (DomEventListener) e -> {
+                    String removedFileName = e.getEventData().getString(
+                            "event.detail" +
+                                    ".file.name");
+                    e.getEventData().remove(removedFileName);
+                    newUser.setAvatarImage(null);
+                    newUser.setAvatarImageName(null);
+                }).addEventData("event.detail.file.name");
         // upload non image file (by file extension)
         upload.addFileRejectedListener(event -> {
             String errorMessage = event.getErrorMessage();
@@ -172,46 +183,61 @@ public class SignupView extends VerticalLayout {
             notification.addThemeVariants(NotificationVariant.LUMO_ERROR);
         });
 
-        // We'll need these fields later on so let's store them as class variables
-        emailField = new EmailField(translator.getTranslation("Email", UI.getCurrent().getLocale()));
+        // We'll need these fields later on so let's store them as class
+        // variables
+        EmailField emailField = new EmailField(translator.getTranslation(
+                "Email", UI.getCurrent().getLocale()));
 
-        passwordField1 = new PasswordField(translator.getTranslation("Password", UI.getCurrent().getLocale()));
-        passwordField2 = new PasswordField(translator.getTranslation("Password-again", UI.getCurrent().getLocale()));
+        PasswordField passwordField1 =
+                new PasswordField(translator.getTranslation("Password",
+                        UI.getCurrent().getLocale()));
+        passwordField2 = new PasswordField(translator.getTranslation(
+                "Password-again", UI.getCurrent().getLocale()));
 
-        errorMessage = new Span();
+        Span errorMessage1 = new Span();
 
-        submitButton = new Button(translator.getTranslation("Sign-up", UI.getCurrent().getLocale()));
+        Button submitButton = new Button(translator.getTranslation("Sign-up",
+                UI.getCurrent().getLocale()));
         submitButton.addThemeVariants(ButtonVariant.LUMO_PRIMARY);
 
         /*
          * Build the visible layout
          */
 
-        // Create a FormLayout with all our components. The FormLayout doesn't have any
-        // logic (validation, etc.), but it allows us to configure Responsiveness from
-        // Java code and its defaults looks nicer than just using a VerticalLayout.
-        FormLayout formLayout = new FormLayout(title, usernameField, nameField, avatarLabel, upload, passwordField1, passwordField2,
-                emailField, errorMessage, submitButton);
+        // Create a FormLayout with all our components. The FormLayout
+        // doesn't have any
+        // logic (validation, etc.), but it allows us to configure
+        // Responsiveness from
+        // Java code and its defaults looks nicer than just using a
+        // VerticalLayout.
+        FormLayout formLayout = new FormLayout(title, usernameField,
+                nameField, avatarLabel, upload, passwordField1, passwordField2,
+                emailField, errorMessage1, submitButton);
 
         // Restrict maximum width and center on page
         formLayout.setMaxWidth("500px");
         formLayout.getStyle().set("margin", "0 auto");
 
-        // Allow the form layout to be responsive. On device widths 0-490px we have one
-        // column, then we have two. Field labels are always on top of the fields.
-        formLayout.setResponsiveSteps(new FormLayout.ResponsiveStep("0", 1, FormLayout.ResponsiveStep.LabelsPosition.TOP),
-                new FormLayout.ResponsiveStep("490px", 2, FormLayout.ResponsiveStep.LabelsPosition.TOP));
+        // Allow the form layout to be responsive. On device widths 0-490px
+        // we have one
+        // column, then we have two. Field labels are always on top of the
+        // fields.
+        formLayout.setResponsiveSteps(new FormLayout.ResponsiveStep("0", 1,
+                        FormLayout.ResponsiveStep.LabelsPosition.TOP),
+                new FormLayout.ResponsiveStep("490px", 2,
+                        FormLayout.ResponsiveStep.LabelsPosition.TOP));
 
-        // These components take full width regardless if we use one column or two (it
+        // These components take full width regardless if we use one column
+        // or two (it
         // just looks better that way)
         formLayout.setColspan(title, 2);
         formLayout.setColspan(upload, 2);
-        formLayout.setColspan(errorMessage, 2);
+        formLayout.setColspan(errorMessage1, 2);
         formLayout.setColspan(submitButton, 2);
 
         // Add some styles to the error message to make it pop out
-        errorMessage.getStyle().set("color", "var(--lumo-error-text-color)");
-        errorMessage.getStyle().set("padding", "15px 0");
+        errorMessage1.getStyle().set("color", "var(--lumo-error-text-color)");
+        errorMessage1.getStyle().set("padding", "15px 0");
 
         // Add the form to the page
         add(formLayout);
@@ -221,45 +247,60 @@ public class SignupView extends VerticalLayout {
          */
 
         /*
-         * Binder is a form utility class provided by Vaadin. Here, we use a specialized
-         * version to gain access to automatic Bean Validation (JSR-303). We provide our
-         * data class so that the Binder can read the validation definitions on that
+         * Binder is a form utility class provided by Vaadin. Here, we use a
+         * specialized
+         * version to gain access to automatic Bean Validation (JSR-303). We
+         * provide our
+         * data class so that the Binder can read the validation definitions
+         * on that
          * class and create appropriate validators. The BeanValidationBinder can
-         * automatically validate all JSR-303 definitions, meaning we can concentrate on
+         * automatically validate all JSR-303 definitions, meaning we can
+         * concentrate on
          * custom things such as the passwords in this class.
          */
         binder = new BeanValidationBinder<>(User.class);
 
         // Basic name fields that are required to fill in
-        binder.forField(usernameField).asRequired().withValidator(this::duplicateUsernameValidator).bind("username");
+        binder.forField(usernameField).asRequired().withValidator
+                (this::duplicateUsernameValidator).bind("username");
         binder.forField(nameField).asRequired().bind("name");
 
         // EmailField uses a Validator that extends one of the built-in ones.
         // Note that we use 'asRequired(Validator)' instead of
         // 'withValidator(Validator)'; this method allows 'asRequired' to
-        // be conditional instead of always on. We don't want to require the email if
+        // be conditional instead of always on. We don't want to require the
+        // email if
         // the user declines marketing messages.
-        binder.forField(emailField).asRequired().withValidator(new EmailValidator(translator.getTranslation("Invalid-email", UI.getCurrent().getLocale()))).withValidator(this::duplicateEmailValidator).bind("email");
+        binder.forField(emailField).asRequired().withValidator(new
+                EmailValidator(translator.getTranslation("Invalid-email",
+                UI.getCurrent().getLocale()))).withValidator
+                (this::duplicateEmailValidator).bind("email");
 
         // Another custom validator, this time for passwords
-        binder.forField(passwordField1).asRequired().withValidator(this::passwordValidator).withConverter(new passwordConverter()).bind("hashedPassword");
-        // We won't bind passwordField2 to the Binder, because it will have the same
+        binder.forField(passwordField1).asRequired().withValidator
+                (this::passwordValidator).withConverter(
+                new passwordConverter()).bind("hashedPassword");
+        // We won't bind passwordField2 to the Binder, because it will have
+        // the same
         // value as the first field when correctly filled in. We just use it for
         // validation.
 
-        // The second field is not connected to the Binder, but we want the binder to
-        // re-check the password validator when the field value changes. The easiest way
+        // The second field is not connected to the Binder, but we want the
+        // binder to
+        // re-check the password validator when the field value changes. The
+        // easiest way
         // is just to do that manually.
         passwordField2.addValueChangeListener(e -> {
 
-            // The user has modified the second field, now we can validate and show errors.
+            // The user has modified the second field, now we can validate
+            // and show errors.
             // See passwordValidator() for how this flag is used.
             enablePasswordValidation = true;
 
             binder.validate();
         });
         // A label where bean-level error messages go
-        binder.setStatusLabel(errorMessage);
+        binder.setStatusLabel(errorMessage1);
 
         // And finally the submit button
         submitButton.addClickListener(e -> {
@@ -299,7 +340,8 @@ public class SignupView extends VerticalLayout {
                 // validation errors are already visible for each field,
                 // and bean-level errors are shown in the status label.
 
-                // We could show additional messages here if we want, do logging, etc.
+                // We could show additional messages here if we want, do
+                // logging, etc.
 
             }
         });
@@ -310,7 +352,10 @@ public class SignupView extends VerticalLayout {
      * We call this method when form submission has succeeded
      */
     private void showSuccess(User detailsBean) {
-        Notification notification = Notification.show(String.format(translator.getTranslation("Welcome-message", UI.getCurrent().getLocale()), detailsBean.getName()));
+        Notification notification =
+                Notification.show(String.format(translator.getTranslation(
+                                "Welcome-message", UI.getCurrent().getLocale()),
+                        detailsBean.getName()));
         notification.addThemeVariants(NotificationVariant.LUMO_SUCCESS);
 
         // Here you'd typically redirect the user to another view
@@ -330,11 +375,13 @@ public class SignupView extends VerticalLayout {
          * complexity as well!
          */
         if (pass1 == null || pass1.length() < 8) {
-            return ValidationResult.error(translator.getTranslation("Password-length-too-short", UI.getCurrent().getLocale()));
+            return ValidationResult.error(translator.getTranslation("Password" +
+                    "-length-too-short", UI.getCurrent().getLocale()));
         }
 
         if (!enablePasswordValidation) {
-            // user hasn't visited the field yet, so don't validate just yet, but next time.
+            // user hasn't visited the field yet, so don't validate just yet,
+            // but next time.
             enablePasswordValidation = true;
             return ValidationResult.ok();
         }
@@ -345,24 +392,29 @@ public class SignupView extends VerticalLayout {
             return ValidationResult.ok();
         }
 
-        return ValidationResult.error(translator.getTranslation("Password-dont-match", UI.getCurrent().getLocale()));
+        return ValidationResult.error(translator.getTranslation("Password" +
+                "-dont-match", UI.getCurrent().getLocale()));
     }
 
-    private ValidationResult duplicateUsernameValidator(String username, ValueContext ctx) {
+    private ValidationResult duplicateUsernameValidator(String username,
+                                                        ValueContext ctx) {
 
         if (service.isUsernameNonExist(username)) {
             return ValidationResult.ok();
         } else {
-            return ValidationResult.error(translator.getTranslation("Username-duplicate", UI.getCurrent().getLocale()));
+            return ValidationResult.error(translator.getTranslation("Username" +
+                    "-duplicate", UI.getCurrent().getLocale()));
         }
     }
 
-    private ValidationResult duplicateEmailValidator(String email, ValueContext ctx) {
+    private ValidationResult duplicateEmailValidator(String email,
+                                                     ValueContext ctx) {
 
         if (service.isEmailNonExist(email)) {
             return ValidationResult.ok();
         } else {
-            return ValidationResult.error(translator.getTranslation("Email-duplicate", UI.getCurrent().getLocale()));
+            return ValidationResult.error(translator.getTranslation("Email" +
+                    "-duplicate", UI.getCurrent().getLocale()));
         }
     }
 
@@ -386,7 +438,8 @@ public class SignupView extends VerticalLayout {
                             .setUnexpectedServerError(
                                     "伺服器錯誤，上傳失敗")
                             .setForbidden("禁止上傳")));
-            setUnits(new Units().setSize(Arrays.asList("B", "kB", "MB", "GB", "TB",
+            setUnits(new Units().setSize(Arrays.asList("B", "kB", "MB", "GB",
+                    "TB",
                     "PB", "EB", "ZB", "YB")));
         }
     }
@@ -398,9 +451,11 @@ public class SignupView extends VerticalLayout {
             setError(new Error().setFileIsTooBig("File is Too Big.")
                     .setIncorrectFileType("Incorrect File Type."));
             setUploading(new Uploading()
-                    .setStatus(new Uploading.Status().setConnecting("Connecting...")
+                    .setStatus(new Uploading.Status().setConnecting(
+                                    "Connecting...")
                             .setStalled("Stalled")
-                            .setProcessing("Processing File...").setHeld("Queued"))
+                            .setProcessing("Processing File...").setHeld(
+                                    "Queued"))
                     .setRemainingTime(new Uploading.RemainingTime()
                             .setPrefix("remaining time: ")
                             .setUnknown("unknown remaining time"))
@@ -410,7 +465,8 @@ public class SignupView extends VerticalLayout {
                             .setUnexpectedServerError(
                                     "Upload failed due to server error")
                             .setForbidden("Upload forbidden")));
-            setUnits(new Units().setSize(Arrays.asList("B", "kB", "MB", "GB", "TB",
+            setUnits(new Units().setSize(Arrays.asList("B", "kB", "MB", "GB",
+                    "TB",
                     "PB", "EB", "ZB", "YB")));
         }
     }
@@ -418,12 +474,14 @@ public class SignupView extends VerticalLayout {
     public static class passwordConverter implements Converter<String, String> {
 
         @Override
-        public Result<String> convertToModel(String fieldValue, ValueContext valueContext) {
+        public Result<String> convertToModel(String fieldValue,
+                                             ValueContext valueContext) {
             return Result.ok(service.getPasswordEncoder().encode(fieldValue));
         }
 
         @Override
-        public String convertToPresentation(String fieldValue, ValueContext valueContext) {
+        public String convertToPresentation(String fieldValue,
+                                            ValueContext valueContext) {
             return service.getPasswordEncoder().encode(fieldValue);
         }
     }

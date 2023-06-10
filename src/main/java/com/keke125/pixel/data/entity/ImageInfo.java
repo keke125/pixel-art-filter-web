@@ -11,17 +11,31 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 @AllArgsConstructor
 public class ImageInfo extends AbstractEntity {
+
     private String filterType;
+
     private Integer colorNumber;
+
     private Integer pixelSize;
+
     private Integer smooth;
+
     private Integer edgeCrispening;
+
     private Integer saturation;
+
     private Integer contrastRatio;
+
     private String imageOriginalFile;
+
     private String imageNewFile;
+
     private String imageOriginalName;
+
     private String imageNewName;
+
     private String ownerName;
+
     private String uploadImageName;
+
 }

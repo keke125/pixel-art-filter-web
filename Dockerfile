@@ -1,5 +1,5 @@
 FROM eclipse-temurin:17-jre
-MAINTAINER admin@keke125.com
+LABEL maintainer="admin@keke125.com"
 
 COPY target/*.jar /app/pafw.jar
 EXPOSE 8080

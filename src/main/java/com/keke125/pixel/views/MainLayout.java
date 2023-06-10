@@ -52,22 +52,30 @@ public class MainLayout extends AppLayout implements LocaleChangeObserver {
     private H2 viewTitle;
 
     private final AuthenticatedUser authenticatedUser;
+
     private final AccessAnnotationChecker accessChecker;
 
     private static final Translator translator = new Translator();
-    private Button themeButton;
+
     private final Select<Locale> selectLanguage = new Select<>();
+
     // Navigation
     private AppNavItem galleryViewNav;
+
     private AppNavItem pixelTransformViewNav;
+
     private AppNavItem aboutViewNav;
+
     private AppNavItem userProfileViewNav;
+
     private AppNavItem userManagementViewNav;
+
     private final Anchor loginLink = new Anchor();
+
     private MenuItem logout;
 
-
-    public MainLayout(AuthenticatedUser authenticatedUser, AccessAnnotationChecker accessChecker) {
+    public MainLayout(AuthenticatedUser authenticatedUser,
+                      AccessAnnotationChecker accessChecker) {
         this.authenticatedUser = authenticatedUser;
         this.accessChecker = accessChecker;
 
@@ -83,10 +91,12 @@ public class MainLayout extends AppLayout implements LocaleChangeObserver {
         toggle.getElement().setAttribute("aria-label", "Menu toggle");
         // title
         viewTitle = new H2();
-        viewTitle.addClassNames(LumoUtility.FontSize.LARGE, LumoUtility.Margin.NONE);
+        viewTitle.addClassNames(LumoUtility.FontSize.LARGE,
+                LumoUtility.Margin.NONE);
         // select language
         selectLanguage.setItems(translator.getProvidedLocales());
-        selectLanguage.setItemLabelGenerator(g -> translator.getTranslation(g.getLanguage(), UI.getCurrent().getLocale()));
+        selectLanguage.setItemLabelGenerator(g -> translator.getTranslation
+                (g.getLanguage(), UI.getCurrent().getLocale()));
         // check is current language available
         // if not available, using the first available language
         if (translator.getProvidedLocales().contains(UI.getCurrent().getLocale())) {
@@ -94,10 +104,9 @@ public class MainLayout extends AppLayout implements LocaleChangeObserver {
         } else {
             selectLanguage(translator.getProvidedLocales().get(0));
         }
-        // selectLanguage.addValueChangeListener(e -> UI.getCurrent().setLocale(e.getValue()));
         selectLanguage.addValueChangeListener(e -> selectLanguage(e.getValue()));
         // switch between light and dark theme
-        themeButton = new Button(new Icon(VaadinIcon.ADJUST));
+        Button themeButton = new Button(new Icon(VaadinIcon.ADJUST));
         themeButton.addClickListener(e -> toggleTheme());
         // set selectLanguage on right
         selectLanguage.getStyle().set("margin-left", "auto");
@@ -110,7 +119,8 @@ public class MainLayout extends AppLayout implements LocaleChangeObserver {
     private void addDrawerContent() {
         // Drawer header
         H1 appName = new H1("Pixel Art Filter Web");
-        appName.addClassNames(LumoUtility.FontSize.LARGE, LumoUtility.Margin.NONE);
+        appName.addClassNames(LumoUtility.FontSize.LARGE,
+                LumoUtility.Margin.NONE);
         Header header = new Header(appName);
         // Scroller with Navigation
         Scroller scroller = new Scroller(createNavigation());
@@ -122,15 +132,20 @@ public class MainLayout extends AppLayout implements LocaleChangeObserver {
         // For documentation, visit https://github.com/vaadin/vcf-nav#readme
         AppNav nav = new AppNav();
         galleryViewNav = new AppNavItem(translator.getTranslation
-                ("gallery", UI.getCurrent().getLocale()), GalleryView.class, LineAwesomeIcon.IMAGES.create());
+                ("gallery", UI.getCurrent().getLocale()), GalleryView.class,
+                LineAwesomeIcon.IMAGES.create());
         pixelTransformViewNav = new AppNavItem(translator.getTranslation
-                ("pixel-transform", UI.getCurrent().getLocale()), PixelTransformView.class, LineAwesomeIcon.IMAGE.create());
+                ("pixel-transform", UI.getCurrent().getLocale()),
+                PixelTransformView.class, LineAwesomeIcon.IMAGE.create());
         aboutViewNav = new AppNavItem(translator.getTranslation
-                ("about", UI.getCurrent().getLocale()), AboutView.class, LineAwesomeIcon.FILE.create());
+                ("about", UI.getCurrent().getLocale()), AboutView.class,
+                LineAwesomeIcon.FILE.create());
         userManagementViewNav = new AppNavItem(translator.getTranslation
-                ("user-management", UI.getCurrent().getLocale()), UserManagementView.class, LineAwesomeIcon.USERS_SOLID.create());
+                ("user-management", UI.getCurrent().getLocale()),
+                UserManagementView.class, LineAwesomeIcon.USERS_SOLID.create());
         userProfileViewNav = new AppNavItem(translator.getTranslation
-                ("user-profile", UI.getCurrent().getLocale()), UserProfileView.class, LineAwesomeIcon.USER.create());
+                ("user-profile", UI.getCurrent().getLocale()),
+                UserProfileView.class, LineAwesomeIcon.USER.create());
         if (accessChecker.hasAccess(GalleryView.class)) {
             nav.addItem(galleryViewNav);
 
@@ -175,7 +190,8 @@ public class MainLayout extends AppLayout implements LocaleChangeObserver {
 
             MenuItem userName = userMenu.addItem("");
             logout = userName.getSubMenu().addItem(translator.getTranslation
-                    ("log-out", UI.getCurrent().getLocale()), e -> authenticatedUser.logout());
+                            ("log-out", UI.getCurrent().getLocale()),
+                    e -> authenticatedUser.logout());
             Div div = new Div();
             div.add(avatar);
             div.add(user.getName());
@@ -203,23 +219,34 @@ public class MainLayout extends AppLayout implements LocaleChangeObserver {
     }
 
     private String getCurrentPageTitle() {
-        PageTitle title = getContent().getClass().getAnnotation(PageTitle.class);
-        return title == null ? "" : translator.getTranslation(title.value().replace(" ", "-").toLowerCase(), UI.getCurrent().getLocale());
+        PageTitle title =
+                getContent().getClass().getAnnotation(PageTitle.class);
+        return title == null ? "" :
+                translator.getTranslation(title.value().replace(" ", "-").toLowerCase(),
+                        UI.getCurrent().getLocale());
     }
 
     @Override
     public void localeChange(LocaleChangeEvent localeChangeEvent) {
         viewTitle.setText(getCurrentPageTitle());
-        selectLanguage.setItemLabelGenerator(g -> translator.getTranslation(g.getLanguage(), UI.getCurrent().getLocale()));
-        galleryViewNav.setLabel(translator.getTranslation("gallery", UI.getCurrent().getLocale()));
-        pixelTransformViewNav.setLabel(translator.getTranslation("pixel-transform", UI.getCurrent().getLocale()));
-        aboutViewNav.setLabel(translator.getTranslation("about", UI.getCurrent().getLocale()));
-        userProfileViewNav.setLabel(translator.getTranslation("user-profile", UI.getCurrent().getLocale()));
-        userManagementViewNav.setLabel(translator.getTranslation("user-management", UI.getCurrent().getLocale()));
+        selectLanguage.setItemLabelGenerator(g -> translator.getTranslation(g.getLanguage(),
+                UI.getCurrent().getLocale()));
+        galleryViewNav.setLabel(translator.getTranslation("gallery",
+                UI.getCurrent().getLocale()));
+        pixelTransformViewNav.setLabel(translator.getTranslation("pixel" +
+                "-transform", UI.getCurrent().getLocale()));
+        aboutViewNav.setLabel(translator.getTranslation("about",
+                UI.getCurrent().getLocale()));
+        userProfileViewNav.setLabel(translator.getTranslation("user-profile",
+                UI.getCurrent().getLocale()));
+        userManagementViewNav.setLabel(translator.getTranslation("user" +
+                "-management", UI.getCurrent().getLocale()));
         if (this.logout != null) {
-            logout.setText(translator.getTranslation("log-out", UI.getCurrent().getLocale()));
+            logout.setText(translator.getTranslation("log-out",
+                    UI.getCurrent().getLocale()));
         }
-        loginLink.setText(translator.getTranslation("log-in", UI.getCurrent().getLocale()));
+        loginLink.setText(translator.getTranslation("log-in",
+                UI.getCurrent().getLocale()));
     }
 
     private void setThemeFromCookie() {

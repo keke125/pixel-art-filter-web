@@ -22,14 +22,19 @@ import static com.keke125.pixel.core.Util.acceptedImageFormat;
 
 @Service
 public class ImageService {
+
     private final ImageInfoRepository imageInfoRepository;
+
     private final ImageInfoService imageInfoService;
+
     private final UserService userService;
 
     // binder with Class ImageInfo
     private final Binder<ImageInfo> binderImage = new Binder<>(ImageInfo.class);
 
-    public ImageService(ImageInfoRepository imageInfoRepository, ImageInfoService imageInfoService, UserService userService) {
+    public ImageService(ImageInfoRepository imageInfoRepository,
+                        ImageInfoService imageInfoService,
+                        UserService userService) {
         this.imageInfoRepository = imageInfoRepository;
         this.imageInfoService = imageInfoService;
         this.userService = userService;
@@ -57,7 +62,8 @@ public class ImageService {
     }
 
     public void deleteAllImageInfoByUser(User user) {
-        List<ImageInfo> imageInfoList = imageInfoService.getRepository().findAllByOwnerName(user.getUsername());
+        List<ImageInfo> imageInfoList =
+                imageInfoService.getRepository().findAllByOwnerName(user.getUsername());
         user.setImageSize(0.0);
         user.setImageSizeLimit(0.0);
         userService.update(user);
@@ -73,7 +79,8 @@ public class ImageService {
                     }
                 }
             } catch (RuntimeException e) {
-                System.err.printf("Can't delete user's (ID: %d) images!", user.getId());
+                System.err.printf("Can't delete user's (ID: %d) images!",
+                        user.getId());
             }
         }
     }
@@ -85,35 +92,43 @@ public class ImageService {
         Instant instantNow = Instant.now();
         // get current directory
         Path workingDirectoryPath = Util.getRootPath();
-        File originalImageDirectoryFile = new File(workingDirectoryPath.toAbsolutePath() + File.separator + "images" + File.separator + user.getId() + File.separator + "original");
+        File originalImageDirectoryFile =
+                new File(workingDirectoryPath.toAbsolutePath() + File.separator + "images" + File.separator + user.getId() + File.separator + "original");
         String newFileName = instantNow + "-" + entity.getUploadImageName();
         String newFileNameHashed = DigestUtils.sha256Hex(newFileName);
         newFileNameHashed = newFileNameHashed.substring(0, 8);
         // PixelTransform
-        File generatedImageDirectoryFile = new File(workingDirectoryPath.toAbsolutePath() + File.separator + "images" + File.separator + user.getId() + File.separator + "generated");
+        File generatedImageDirectoryFile =
+                new File(workingDirectoryPath.toAbsolutePath() + File.separator + "images" + File.separator + user.getId() + File.separator + "generated");
         Tika tika = new Tika();
         String mimeType;
         mimeType = tika.detect(entity.getImageOriginalFile());
         File newFile;
         String newFileFullName;
         if (acceptedImageFormat.contains(mimeType)) {
-            newFileFullName = newFileNameHashed + "." + FilenameUtils.getExtension(entity.getImageOriginalName());
+            newFileFullName =
+                    newFileNameHashed + "." + FilenameUtils.getExtension(entity.getImageOriginalName());
         } else {
             newFileFullName = newFileNameHashed + "." + "jpg";
         }
         if (generatedImageDirectoryFile.mkdirs() || generatedImageDirectoryFile.exists()) {
-            newFile = new File(generatedImageDirectoryFile.toPath().resolve(newFileFullName).toAbsolutePath().toString());
+            newFile =
+                    new File(generatedImageDirectoryFile.toPath().resolve(newFileFullName).toAbsolutePath().toString());
         } else {
-            newFile = new File(originalImageDirectoryFile.toPath().resolve(newFileFullName).toAbsolutePath().toString());
+            newFile =
+                    new File(originalImageDirectoryFile.toPath().resolve(newFileFullName).toAbsolutePath().toString());
         }
         Mat imgMat = Imgcodecs.imread(entity.getImageOriginalFile());
-        PixelTransform.saveImg(PixelTransform.transform(imgMat, entity.getColorNumber(), entity.getPixelSize(), entity.getSmooth(), entity.getEdgeCrispening(), entity.getContrastRatio(), entity.getSaturation()), newFile);
+        PixelTransform.saveImg(PixelTransform.transform(imgMat,
+                entity.getColorNumber(), entity.getPixelSize(),
+                entity.getSmooth(), entity.getEdgeCrispening(),
+                entity.getContrastRatio(), entity.getSaturation()), newFile);
         entity.setImageNewFile(newFile.getPath());
         entity.setImageNewName(newFileFullName);
         try {
             binderImage.writeBean(entity);
         } catch (ValidationException e) {
-            throw new RuntimeException(e);
+            System.err.println(e.getMessage());
         }
         imageInfoService.update(entity);
     }

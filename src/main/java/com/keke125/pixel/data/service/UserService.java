@@ -1,9 +1,5 @@
 package com.keke125.pixel.data.service;
-
-import com.keke125.pixel.data.entity.ImageInfo;
 import com.keke125.pixel.data.entity.User;
-
-import java.util.List;
 import java.util.Optional;
 
 import org.springframework.data.domain.Page;
@@ -16,14 +12,13 @@ import org.springframework.stereotype.Service;
 public class UserService {
 
     private final UserRepository repository;
-    private final ImageInfoService imageInfoService;
+
     private final ImageService imageService;
 
     private final PasswordEncoder passwordEncoder;
 
     public UserService(UserRepository repository, ImageInfoService imageInfoService, PasswordEncoder passwordEncoder) {
         this.repository = repository;
-        this.imageInfoService = imageInfoService;
         this.passwordEncoder = passwordEncoder;
         this.imageService = new ImageService(imageInfoService.getRepository(), imageInfoService, this);
     }

@@ -33,7 +33,8 @@ public class ImageInfoService {
         return repository.findAll(pageable);
     }
 
-    public Page<ImageInfo> list(Pageable pageable, Specification<ImageInfo> filter) {
+    public Page<ImageInfo> list(Pageable pageable,
+                                Specification<ImageInfo> filter) {
         return repository.findAll(filter, pageable);
     }
 

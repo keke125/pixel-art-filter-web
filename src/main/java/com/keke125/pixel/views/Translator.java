@@ -5,7 +5,12 @@ import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
 
 import java.text.MessageFormat;
-import java.util.*;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Locale;
+import java.util.Map;
+import java.util.MissingResourceException;
+import java.util.ResourceBundle;
 
 @Component
 public class Translator implements I18NProvider {
@@ -13,7 +18,6 @@ public class Translator implements I18NProvider {
     public static final String BUNDLE_PREFIX = "translate";
 
     public static final Locale LOCALE_ZHT = new Locale("zh", "TW", "繁體中文(臺灣)");
-    // public static final Locale LOCALE_EN = new Locale("en", "US","English(US)");
 
     public static final Locale English = new Locale("en");
 
@@ -35,7 +39,8 @@ public class Translator implements I18NProvider {
             return "";
         }
 
-        final ResourceBundle resourceBundle = ResourceBundle.getBundle(BUNDLE_PREFIX, locale);
+        final ResourceBundle resourceBundle =
+                ResourceBundle.getBundle(BUNDLE_PREFIX, locale);
         localeMap.put(locale.getLanguage(), resourceBundle);
 
         String value;

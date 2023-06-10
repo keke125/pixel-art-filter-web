@@ -23,25 +23,23 @@ import java.util.Locale;
 @Route(value = "login")
 public class LoginView extends LoginOverlay implements BeforeEnterObserver {
 
-    private final AppConfig appConfig;
     private final AuthenticatedUser authenticatedUser;
-    private final LoginI18n.Header headerTC;
-    private final LoginI18n.Header headerEN;
+
     private static final Translator translator = new Translator();
 
     public LoginView(AppConfig appConfig, AuthenticatedUser authenticatedUser) {
-        this.appConfig = appConfig;
         this.authenticatedUser = authenticatedUser;
-        headerTC = new LoginI18n.Header();
-        headerEN = new LoginI18n.Header();
-        setAction(RouteUtil.getRoutePath(VaadinService.getCurrent().getContext(), getClass()));
+        LoginI18n.Header headerTC = new LoginI18n.Header();
+        LoginI18n.Header headerEN = new LoginI18n.Header();
+        setAction(RouteUtil.getRoutePath(VaadinService.getCurrent().getContext(),
+                getClass()));
 
         // i18n Traditional Chinese
         LoginI18n i18nTC = LoginI18n.createDefault();
         i18nTC.setHeader(headerTC);
         // title description
-        i18nTC.getHeader().setTitle(this.appConfig.getWebNameTC());
-        i18nTC.getHeader().setDescription(this.appConfig.getWebDescriptionTC());
+        i18nTC.getHeader().setTitle(appConfig.getWebNameTC());
+        i18nTC.getHeader().setDescription(appConfig.getWebDescriptionTC());
         // login form
         LoginI18n.Form loginFormTC = i18nTC.getForm();
         loginFormTC.setTitle("登入");
@@ -56,20 +54,20 @@ public class LoginView extends LoginOverlay implements BeforeEnterObserver {
         i18nTCErrorMessage.setMessage("請檢查輸入的使用者名稱和密碼是否正確");
         i18nTC.setErrorMessage(i18nTCErrorMessage);
         // support message
-        i18nTC.setAdditionalInformation(this.appConfig.getLoginInfoTC());
+        i18nTC.setAdditionalInformation(appConfig.getLoginInfoTC());
 
         // i18n English
         LoginI18n i18nEN = LoginI18n.createDefault();
         i18nEN.setHeader(headerEN);
         // title description
-        i18nEN.getHeader().setTitle(this.appConfig.getWebNameEN());
-        i18nEN.getHeader().setDescription(this.appConfig.getWebDescriptionEN());
+        i18nEN.getHeader().setTitle(appConfig.getWebNameEN());
+        i18nEN.getHeader().setDescription(appConfig.getWebDescriptionEN());
         // login form
         LoginI18n.Form loginFormEN = i18nEN.getForm();
         loginFormEN.setForgotPassword("Sign up");
         i18nEN.setForm(loginFormEN);
         // support message
-        i18nEN.setAdditionalInformation(this.appConfig.getLoginInfoEN());
+        i18nEN.setAdditionalInformation(appConfig.getLoginInfoEN());
         if (checkLanguage().equals(Translator.LOCALE_ZHT)) {
             setI18n(i18nTC);
         } else {
@@ -89,7 +87,8 @@ public class LoginView extends LoginOverlay implements BeforeEnterObserver {
             event.forwardTo("");
         }
 
-        setError(event.getLocation().getQueryParameters().getParameters().containsKey("error"));
+        setError(event.getLocation().getQueryParameters().
+                getParameters().containsKey("error"));
     }
 
     private Locale checkLanguage() {

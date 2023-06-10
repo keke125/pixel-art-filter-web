@@ -29,38 +29,50 @@ import java.util.Set;
 @AllArgsConstructor
 @Table(name = "application_user")
 public class User extends AbstractEntity implements UserDetails {
+
     @NotNull
     @Length(min = 1, max = 32)
     @Column(unique = true)
     private String username;
+
     @NotNull
     @Length(min = 1, max = 32)
     private String name;
+
     @NotNull
     @JsonIgnore
     private String hashedPassword;
+
     @NotNull
     @Enumerated(EnumType.STRING)
     @ElementCollection(fetch = FetchType.EAGER)
     private Set<Role> roles;
+
     // if avatar is more than 5MB, need to modify column length
     @Lob
     @Column(length = 5242880)
     private byte[] avatarImage;
+
     private String avatarImageName;
+
     @NotNull
     @Email
     @Column(unique = true)
     private String email;
+
     private boolean enabled;
+
     private boolean isAccountNonExpired;
+
     private boolean isAccountNonLocked;
+
     private boolean isCredentialsNonExpired;
+
     // this value can't be changed by any user
     private Double imageSize;
+
     // this value can be changed by user management page
     private Double imageSizeLimit;
-
 
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {

@@ -41,37 +41,58 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.orm.ObjectOptimisticLockingFailureException;
 
 @PageTitle("User Management")
-@Route(value = "user-management/:userID?/:action?(edit)", layout = MainLayout.class)
+@Route(value = "user-management/:userID?/:action?(edit)", layout =
+        MainLayout.class)
 @RolesAllowed("ADMIN")
 @Uses(Icon.class)
 @Uses(Icon.class)
-public class UserManagementView extends Div implements BeforeEnterObserver, LocaleChangeObserver {
+public class UserManagementView extends Div implements BeforeEnterObserver,
+        LocaleChangeObserver {
 
     private static final Translator translator = new Translator();
-    private final String USER_ID = "userID";
+
     private final String USER_EDIT_ROUTE_TEMPLATE = "user-management/%s/edit";
 
     private final Grid<User> grid = new Grid<>(User.class, false);
+
     private final Grid.Column<User> enableColumn;
+
     private final Grid.Column<User> usernameColumn;
+
     private final Grid.Column<User> nameColumn;
+
     private final Grid.Column<User> emailColumn;
+
     private final Grid.Column<User> adminColumn;
+
     private final Grid.Column<User> imageSizeColumn;
+
     private final Grid.Column<User> imageSizeLimitColumn;
+
     private TextField username;
+
     private TextField name;
+
     private TextField email;
+
     private Checkbox enabled;
+
     private Checkbox admin;
+
     private TextField imageSize;
+
     private TextField imageSizeLimit;
 
     private final Button cancel = new Button();
+
     private final Button save = new Button();
+
     private final Button delete = new Button();
+
     private final BeanValidationBinder<User> binder;
+
     private final UserService userService;
+
     private User user;
 
     public UserManagementView(UserService userService) {
@@ -88,45 +109,62 @@ public class UserManagementView extends Div implements BeforeEnterObserver, Loca
 
         // Configure Grid
         usernameColumn = grid.addColumn("username").setAutoWidth(true);
-        usernameColumn.setHeader(translator.getTranslation("User-name", UI.getCurrent().getLocale()));
+        usernameColumn.setHeader(translator.getTranslation("User-name",
+                UI.getCurrent().getLocale()));
         nameColumn = grid.addColumn("name").setAutoWidth(true);
-        nameColumn.setHeader(translator.getTranslation("Name", UI.getCurrent().getLocale()));
+        nameColumn.setHeader(translator.getTranslation("Name",
+                UI.getCurrent().getLocale()));
         emailColumn = grid.addColumn("email").setAutoWidth(true);
-        emailColumn.setHeader(translator.getTranslation("Email", UI.getCurrent().getLocale()));
+        emailColumn.setHeader(translator.getTranslation("Email",
+                UI.getCurrent().getLocale()));
         LitRenderer<User> enabledRenderer = LitRenderer.<User>of(
-                        "<vaadin-icon icon='vaadin:${item.icon}' style='width: var(--lumo-icon-size-s); height: var(--lumo-icon-size-s); color: ${item.color};'></vaadin-icon>")
-                .withProperty("icon", enabled -> enabled.isEnabled() ? "check" : "minus").withProperty("color",
+                        "<vaadin-icon icon='vaadin:${item.icon}' " +
+                                "style='width: var(--lumo-icon-size-s); " +
+                                "height: var(--lumo-icon-size-s); color: " +
+                                "${item.color};'></vaadin-icon>")
+                .withProperty("icon", enabled -> enabled.isEnabled() ? "check"
+                        : "minus").withProperty("color",
                         enabled -> enabled.isEnabled()
                                 ? "var(--lumo-primary-text-color)"
                                 : "var(--lumo-disabled-text-color)");
 
 
         LitRenderer<User> adminRenderer = LitRenderer.<User>of(
-                        "<vaadin-icon icon='vaadin:${item.icon}' style='width: var(--lumo-icon-size-s); height: var(--lumo-icon-size-s); color: ${item.color};'></vaadin-icon>")
-                .withProperty("icon", admin -> admin.isAdmin() ? "check" : "minus").withProperty("color",
+                        "<vaadin-icon icon='vaadin:${item.icon}' " +
+                                "style='width: var(--lumo-icon-size-s); " +
+                                "height: var(--lumo-icon-size-s); color: " +
+                                "${item.color};'></vaadin-icon>")
+                .withProperty("icon", admin -> admin.isAdmin() ? "check" :
+                        "minus").withProperty("color",
                         admin -> admin.isAdmin()
                                 ? "var(--lumo-primary-text-color)"
                                 : "var(--lumo-disabled-text-color)");
         enableColumn = grid.addColumn(enabledRenderer);
-        enableColumn.setHeader(translator.getTranslation("Enable", UI.getCurrent().getLocale())).setAutoWidth(true);
+        enableColumn.setHeader(translator.getTranslation("Enable",
+                UI.getCurrent().getLocale())).setAutoWidth(true);
         adminColumn = grid.addColumn(adminRenderer);
-        adminColumn.setHeader(translator.getTranslation("Admin", UI.getCurrent().getLocale())).setAutoWidth(true);
+        adminColumn.setHeader(translator.getTranslation("Admin",
+                UI.getCurrent().getLocale())).setAutoWidth(true);
         imageSizeColumn = grid.addColumn("imageSize");
         imageSizeColumn.setAutoWidth(true);
-        imageSizeColumn.setHeader(translator.getTranslation("Simple-image-Size", UI.getCurrent().getLocale()));
+        imageSizeColumn.setHeader(translator.getTranslation("Simple-image" +
+                "-Size", UI.getCurrent().getLocale()));
         imageSizeLimitColumn = grid.addColumn("imageSizeLimit");
         imageSizeLimitColumn.setAutoWidth(true);
-        imageSizeLimitColumn.setHeader(translator.getTranslation("Simple-Image-size-limit", UI.getCurrent().getLocale()));
+        imageSizeLimitColumn.setHeader(translator.getTranslation("Simple" +
+                "-Image-size-limit", UI.getCurrent().getLocale()));
 
         grid.setItems(query -> userService.list(
-                        PageRequest.of(query.getPage(), query.getPageSize(), VaadinSpringDataHelpers.toSpringDataSort(query)))
+                        PageRequest.of(query.getPage(), query.getPageSize(),
+                                VaadinSpringDataHelpers.toSpringDataSort(query)))
                 .stream());
         grid.addThemeVariants(GridVariant.LUMO_NO_BORDER);
 
         // when a row is selected or deselected, populate form
         grid.asSingleSelect().addValueChangeListener(event -> {
             if (event.getValue() != null) {
-                UI.getCurrent().navigate(String.format(USER_EDIT_ROUTE_TEMPLATE, event.getValue().getId()));
+                UI.getCurrent().navigate(String.format(USER_EDIT_ROUTE_TEMPLATE,
+                        event.getValue().getId()));
             } else {
                 clearForm();
                 UI.getCurrent().navigate(UserManagementView.class);
@@ -137,19 +175,28 @@ public class UserManagementView extends Div implements BeforeEnterObserver, Loca
         binder = new BeanValidationBinder<>(User.class);
 
         // Bind fields. This is where you'd define e.g. validation rules
-        binder.forField(imageSize).withConverter(new StringToDoubleConverter(translator.getTranslation("input-only-float", UI.getCurrent().getLocale()))).bind("imageSize");
-        binder.forField(imageSizeLimit).withConverter(new StringToDoubleConverter(translator.getTranslation("input-only-integer", UI.getCurrent().getLocale()))).bind("imageSizeLimit");
-        binder.forField(username).withValidator(this::duplicateUsernameValidator).bind("username");
-        binder.forField(email).withValidator(this::duplicateEmailValidator).bind("email");
+        binder.forField(imageSize).withConverter(new StringToDoubleConverter
+                (translator.getTranslation("input-only-float",
+                        UI.getCurrent().getLocale()))).bind("imageSize");
+        binder.forField(imageSizeLimit).withConverter(new
+                StringToDoubleConverter(translator.getTranslation
+                ("input-only-integer", UI.getCurrent().getLocale()))).bind(
+                        "imageSizeLimit");
+        binder.forField(username).withValidator
+                (this::duplicateUsernameValidator).bind("username");
+        binder.forField(email).withValidator
+                (this::duplicateEmailValidator).bind("email");
         binder.bindInstanceFields(this);
 
-        cancel.setText(translator.getTranslation("cancel", UI.getCurrent().getLocale()));
+        cancel.setText(translator.getTranslation("cancel",
+                UI.getCurrent().getLocale()));
         cancel.addClickListener(e -> {
             clearForm();
             refreshGrid();
         });
 
-        save.setText(translator.getTranslation("save", UI.getCurrent().getLocale()));
+        save.setText(translator.getTranslation("save",
+                UI.getCurrent().getLocale()));
         save.addClickListener(e -> {
             try {
                 if (this.user == null) {
@@ -159,22 +206,29 @@ public class UserManagementView extends Div implements BeforeEnterObserver, Loca
                 userService.update(this.user);
                 clearForm();
                 refreshGrid();
-                Notification.show(translator.getTranslation("Data-updated", UI.getCurrent().getLocale()));
+                Notification.show(translator.getTranslation("Data-updated",
+                        UI.getCurrent().getLocale()));
                 UI.getCurrent().navigate(UserManagementView.class);
             } catch (ObjectOptimisticLockingFailureException exception) {
-                Notification n = Notification.show(translator.getTranslation("update-failed-optimistic-locking", UI.getCurrent().getLocale()));
+                Notification n = Notification.show(translator.getTranslation(
+                        "update-failed-optimistic-locking",
+                        UI.getCurrent().getLocale()));
                 n.setPosition(Position.MIDDLE);
                 n.addThemeVariants(NotificationVariant.LUMO_ERROR);
             } catch (ValidationException validationException) {
-                Notification.show(translator.getTranslation("update-failed-value-invalid", UI.getCurrent().getLocale()));
+                Notification.show(translator.getTranslation("update-failed" +
+                        "-value-invalid", UI.getCurrent().getLocale()));
             }
         });
 
-        delete.setText(translator.getTranslation("Delete", UI.getCurrent().getLocale()));
+        delete.setText(translator.getTranslation("Delete",
+                UI.getCurrent().getLocale()));
         delete.addClickListener(e -> {
             if (this.user != null) {
                 userService.delete(user.getId());
-                Notification.show(String.format(translator.getTranslation("removed-user", UI.getCurrent().getLocale()), user.getId()));
+                Notification.show(String.format(translator.getTranslation(
+                                "removed-user", UI.getCurrent().getLocale()),
+                        user.getId()));
             } else {
                 System.err.println("User is null.\n");
             }
@@ -183,13 +237,18 @@ public class UserManagementView extends Div implements BeforeEnterObserver, Loca
 
     @Override
     public void beforeEnter(BeforeEnterEvent event) {
-        Optional<Long> userId = event.getRouteParameters().get(USER_ID).map(Long::parseLong);
+        String USER_ID = "userID";
+        Optional<Long> userId =
+                event.getRouteParameters().get(USER_ID).map(Long::parseLong);
         if (userId.isPresent()) {
             Optional<User> userFromBackend = userService.get(userId.get());
             if (userFromBackend.isPresent()) {
                 populateForm(userFromBackend.get());
             } else {
-                Notification.show(String.format(translator.getTranslation("cant-find-user-info", UI.getCurrent().getLocale()), userId.get()),
+                Notification.show(String.format(translator.getTranslation(
+                                        "cant-find-user-info",
+                                        UI.getCurrent().getLocale()),
+                                userId.get()),
                         3000, Notification.Position.BOTTOM_START);
                 // when a row is selected but the data is no longer available,
                 // refresh grid
@@ -208,15 +267,23 @@ public class UserManagementView extends Div implements BeforeEnterObserver, Loca
         editorLayoutDiv.add(editorDiv);
 
         FormLayout formLayout = new FormLayout();
-        username = new TextField(translator.getTranslation("User-name", UI.getCurrent().getLocale()));
-        name = new TextField(translator.getTranslation("Name", UI.getCurrent().getLocale()));
-        email = new TextField(translator.getTranslation("Email", UI.getCurrent().getLocale()));
-        enabled = new Checkbox(translator.getTranslation("Enable", UI.getCurrent().getLocale()));
-        admin = new Checkbox(translator.getTranslation("Admin", UI.getCurrent().getLocale()));
-        imageSize = new TextField(translator.getTranslation("Simple-image-Size", UI.getCurrent().getLocale()));
+        username = new TextField(translator.getTranslation("User-name",
+                UI.getCurrent().getLocale()));
+        name = new TextField(translator.getTranslation("Name",
+                UI.getCurrent().getLocale()));
+        email = new TextField(translator.getTranslation("Email",
+                UI.getCurrent().getLocale()));
+        enabled = new Checkbox(translator.getTranslation("Enable",
+                UI.getCurrent().getLocale()));
+        admin = new Checkbox(translator.getTranslation("Admin",
+                UI.getCurrent().getLocale()));
+        imageSize = new TextField(translator.getTranslation("Simple-image" +
+                "-Size", UI.getCurrent().getLocale()));
         imageSize.setReadOnly(true);
-        imageSizeLimit = new TextField(translator.getTranslation("Simple-Image-size-limit", UI.getCurrent().getLocale()));
-        formLayout.add(username, name, email, enabled, admin, imageSize, imageSizeLimit);
+        imageSizeLimit = new TextField(translator.getTranslation("Simple" +
+                "-Image-size-limit", UI.getCurrent().getLocale()));
+        formLayout.add(username, name, email, enabled, admin, imageSize,
+                imageSizeLimit);
 
         editorDiv.add(formLayout);
         createButtonLayout(editorLayoutDiv);
@@ -228,7 +295,8 @@ public class UserManagementView extends Div implements BeforeEnterObserver, Loca
         buttonLayout.setClassName("button-layout");
         cancel.addThemeVariants(ButtonVariant.LUMO_TERTIARY);
         save.addThemeVariants(ButtonVariant.LUMO_PRIMARY);
-        delete.addThemeVariants(ButtonVariant.LUMO_PRIMARY, ButtonVariant.LUMO_ERROR);
+        delete.addThemeVariants(ButtonVariant.LUMO_PRIMARY,
+                ButtonVariant.LUMO_ERROR);
         buttonLayout.add(save, cancel, delete);
         editorLayoutDiv.add(buttonLayout);
     }
@@ -255,42 +323,63 @@ public class UserManagementView extends Div implements BeforeEnterObserver, Loca
 
     }
 
-    private ValidationResult duplicateUsernameValidator(String username, ValueContext ctx) {
+    private ValidationResult duplicateUsernameValidator(String username,
+                                                        ValueContext ctx) {
 
-        if (userService.isUsernameNonExist(username) || username.equals(user.getUsername())) {
+        if (userService.isUsernameNonExist(username) || username.equals
+                (user.getUsername())) {
             return ValidationResult.ok();
         } else {
-            return ValidationResult.error(translator.getTranslation("Username-duplicate", UI.getCurrent().getLocale()));
+            return ValidationResult.error(translator.getTranslation("Username" +
+                    "-duplicate", UI.getCurrent().getLocale()));
         }
     }
 
-    private ValidationResult duplicateEmailValidator(String email, ValueContext ctx) {
-
+    private ValidationResult duplicateEmailValidator(String email,
+                                                     ValueContext ctx) {
         if (userService.isEmailNonExist(email) || email.equals(user.getEmail())) {
             return ValidationResult.ok();
         } else {
-            return ValidationResult.error(translator.getTranslation("Email-duplicate", UI.getCurrent().getLocale()));
+            return ValidationResult.error(translator.getTranslation("Email" +
+                    "-duplicate", UI.getCurrent().getLocale()));
         }
     }
 
     @Override
     public void localeChange(LocaleChangeEvent localeChangeEvent) {
-        username.setLabel(translator.getTranslation("User-name", UI.getCurrent().getLocale()));
-        name.setLabel(translator.getTranslation("Name", UI.getCurrent().getLocale()));
-        email.setLabel(translator.getTranslation("Email", UI.getCurrent().getLocale()));
-        enabled.setLabel(translator.getTranslation("Enable", UI.getCurrent().getLocale()));
-        admin.setLabel(translator.getTranslation("Admin", UI.getCurrent().getLocale()));
-        imageSize.setLabel(translator.getTranslation("Simple-image-Size", UI.getCurrent().getLocale()));
-        imageSizeLimit.setLabel(translator.getTranslation("Simple-Image-size-limit", UI.getCurrent().getLocale()));
-        save.setText(translator.getTranslation("save", UI.getCurrent().getLocale()));
-        delete.setText(translator.getTranslation("Delete", UI.getCurrent().getLocale()));
-        cancel.setText(translator.getTranslation("cancel", UI.getCurrent().getLocale()));
-        usernameColumn.setHeader(translator.getTranslation("User-name", UI.getCurrent().getLocale()));
-        nameColumn.setHeader(translator.getTranslation("Name", UI.getCurrent().getLocale()));
-        emailColumn.setHeader(translator.getTranslation("Email", UI.getCurrent().getLocale()));
-        enableColumn.setHeader(translator.getTranslation("Enable", UI.getCurrent().getLocale())).setAutoWidth(true);
-        adminColumn.setHeader(translator.getTranslation("Admin", UI.getCurrent().getLocale())).setAutoWidth(true);
-        imageSizeColumn.setHeader(translator.getTranslation("Simple-image-Size", UI.getCurrent().getLocale()));
-        imageSizeLimitColumn.setHeader(translator.getTranslation("Simple-Image-size-limit", UI.getCurrent().getLocale()));
+        username.setLabel(translator.getTranslation("User-name",
+                UI.getCurrent().getLocale()));
+        name.setLabel(translator.getTranslation("Name",
+                UI.getCurrent().getLocale()));
+        email.setLabel(translator.getTranslation("Email",
+                UI.getCurrent().getLocale()));
+        enabled.setLabel(translator.getTranslation("Enable",
+                UI.getCurrent().getLocale()));
+        admin.setLabel(translator.getTranslation("Admin",
+                UI.getCurrent().getLocale()));
+        imageSize.setLabel(translator.getTranslation("Simple-image-Size",
+                UI.getCurrent().getLocale()));
+        imageSizeLimit.setLabel(translator.getTranslation("Simple-Image-size" +
+                "-limit", UI.getCurrent().getLocale()));
+        save.setText(translator.getTranslation("save",
+                UI.getCurrent().getLocale()));
+        delete.setText(translator.getTranslation("Delete",
+                UI.getCurrent().getLocale()));
+        cancel.setText(translator.getTranslation("cancel",
+                UI.getCurrent().getLocale()));
+        usernameColumn.setHeader(translator.getTranslation("User-name",
+                UI.getCurrent().getLocale()));
+        nameColumn.setHeader(translator.getTranslation("Name",
+                UI.getCurrent().getLocale()));
+        emailColumn.setHeader(translator.getTranslation("Email",
+                UI.getCurrent().getLocale()));
+        enableColumn.setHeader(translator.getTranslation("Enable",
+                UI.getCurrent().getLocale())).setAutoWidth(true);
+        adminColumn.setHeader(translator.getTranslation("Admin",
+                UI.getCurrent().getLocale())).setAutoWidth(true);
+        imageSizeColumn.setHeader(translator.getTranslation("Simple-image" +
+                "-Size", UI.getCurrent().getLocale()));
+        imageSizeLimitColumn.setHeader(translator.getTranslation("Simple" +
+                "-Image-size-limit", UI.getCurrent().getLocale()));
     }
 }
