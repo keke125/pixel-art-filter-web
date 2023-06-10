@@ -36,7 +36,8 @@ import java.util.Optional;
 @RolesAllowed("USER")
 @Uses(Icon.class)
 @Uses(Icon.class)
-public class UserProfileView extends VerticalLayout implements LocaleChangeObserver {
+public class UserProfileView extends VerticalLayout
+        implements LocaleChangeObserver {
 
     private static final Translator translator = new Translator();
 
@@ -155,7 +156,7 @@ public class UserProfileView extends VerticalLayout implements LocaleChangeObser
         // Another custom validator, this time for passwords
         binder.forField(passwordField2).asRequired().withValidator
                 (this::passwordValidator).withConverter
-                (new passwordConverter()).bind("hashedPassword");
+                (new PasswordConverter()).bind("hashedPassword");
         // We won't bind passwordField2 to the Binder, because it will have
         // the same
         // value as the first field when correctly filled in. We just use it for
@@ -282,7 +283,7 @@ public class UserProfileView extends VerticalLayout implements LocaleChangeObser
                 UI.getCurrent().getLocale()));
     }
 
-    public static class passwordConverter implements Converter<String, String> {
+    public static class PasswordConverter implements Converter<String, String> {
 
         @Override
         public Result<String> convertToModel(String fieldValue,

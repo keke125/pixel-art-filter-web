@@ -92,22 +92,27 @@ public class GalleryViewCard extends ListItem implements LocaleChangeObserver {
         // create stream resource from image file bytes
         StreamResource generatedResource;
         if (!FilenameUtils.getExtension
-                (imageInfo.getUploadImageName()).equals(FilenameUtils.getExtension
-                (generatedFile.getName()))) {
+                (imageInfo.getUploadImageName()).equals
+                (FilenameUtils.getExtension(generatedFile.getName()))) {
             generatedResource =
-                    new StreamResource("generated-" + FilenameUtils.removeExtension
-                            (imageInfo.getUploadImageName()) + ".jpg", () -> {
+                    new StreamResource("generated-" +
+                            FilenameUtils.removeExtension
+                                    (imageInfo.getUploadImageName()) + ".jpg"
+                            , () -> {
                         try {
-                            return new ByteArrayInputStream(Files.readAllBytes(generatedFile.toPath()));
+                            return new ByteArrayInputStream
+                                    (Files.readAllBytes(generatedFile.toPath()));
                         } catch (IOException e) {
                             throw new RuntimeException(e);
                         }
                     });
         } else {
             generatedResource =
-                    new StreamResource("generated-" + imageInfo.getUploadImageName(), () -> {
+                    new StreamResource("generated-" +
+                            imageInfo.getUploadImageName(), () -> {
                         try {
-                            return new ByteArrayInputStream(Files.readAllBytes(generatedFile.toPath()));
+                            return new ByteArrayInputStream
+                                    (Files.readAllBytes(generatedFile.toPath()));
                         } catch (IOException e) {
                             throw new RuntimeException(e);
                         }
@@ -118,9 +123,11 @@ public class GalleryViewCard extends ListItem implements LocaleChangeObserver {
         // create stream resource from image file bytes
         StreamResource originalResource;
         originalResource =
-                new StreamResource("original-" + imageInfo.getUploadImageName(), () -> {
+                new StreamResource("original-" +
+                        imageInfo.getUploadImageName(), () -> {
                     try {
-                        return new ByteArrayInputStream(Files.readAllBytes(originalFile.toPath()));
+                        return new ByteArrayInputStream
+                                (Files.readAllBytes(originalFile.toPath()));
                     } catch (IOException e) {
                         throw new RuntimeException(e);
                     }
@@ -177,15 +184,17 @@ public class GalleryViewCard extends ListItem implements LocaleChangeObserver {
         if (getLocale().equals(Translator.LOCALE_ZHT)) {
             smooth = new Span(translator.getTranslation("Smooth",
                     UI.getCurrent().getLocale()) +
-                    PixelTransformView.Smooth.valueToName(imageInfo.getSmooth(), "TC") + ": ");
+                    PixelTransformView.Smooth.valueToName(imageInfo.getSmooth(),
+                            "TC") + ": ");
             edgeCrispening = new Span(translator.getTranslation("Edge" +
                     "-crispening", UI.getCurrent().getLocale()) +
                     PixelTransformView.EdgeCrispening.valueToName
                             (imageInfo.getEdgeCrispening(), "TC") + ": ");
         } else {
             smooth = new Span(translator.getTranslation("Smooth",
-                    UI.getCurrent().getLocale()) + PixelTransformView.Smooth.valueToName
-                    (imageInfo.getSmooth(), "EN") + ": ");
+                    UI.getCurrent().getLocale()) +
+                    PixelTransformView.Smooth.valueToName
+                            (imageInfo.getSmooth(), "EN") + ": ");
             edgeCrispening = new Span(translator.getTranslation("Edge" +
                     "-crispening", UI.getCurrent().getLocale()) +
                     PixelTransformView.EdgeCrispening.valueToName
@@ -195,7 +204,8 @@ public class GalleryViewCard extends ListItem implements LocaleChangeObserver {
                 UI.getCurrent().getLocale()) + imageInfo.getSaturation() + ":" +
                 " ");
         contrastRatio = new Span(translator.getTranslation("Contras-ratio",
-                UI.getCurrent().getLocale()) + imageInfo.getContrastRatio() + ": ");
+                UI.getCurrent().getLocale()) +
+                imageInfo.getContrastRatio() + ": ");
         VerticalLayout parameterLayout = new VerticalLayout(colorNumber,
                 pixelSize, smooth, edgeCrispening, saturation, contrastRatio);
         parameterLayout.setSpacing(false);
@@ -251,35 +261,41 @@ public class GalleryViewCard extends ListItem implements LocaleChangeObserver {
                 UI.getCurrent().getLocale()));
         detailButton.setText(translator.getTranslation("View-Details",
                 UI.getCurrent().getLocale()));
-        imagesTabs.getTabAt(0).setLabel(translator.getTranslation("Original",
-                UI.getCurrent().getLocale()));
-        imagesTabs.getTabAt(1).setLabel(translator.getTranslation("Generated"
-                , UI.getCurrent().getLocale()));
+        imagesTabs.getTabAt(0).setLabel(translator.getTranslation
+                ("Original",
+                        UI.getCurrent().getLocale()));
+        imagesTabs.getTabAt(1).setLabel(translator.getTranslation
+                ("Generated"
+                        , UI.getCurrent().getLocale()));
         colorNumber.setText(translator.getTranslation("Color-number",
                 UI.getCurrent().getLocale()) + ": " + imageInfo.getColorNumber());
         pixelSize.setText(translator.getTranslation("Pixel-size",
                 UI.getCurrent().getLocale()) + ": " + imageInfo.getPixelSize());
         if (getLocale().equals(Translator.LOCALE_ZHT)) {
             smooth.setText(translator.getTranslation("Smooth",
-                    UI.getCurrent().getLocale()) + ": " + PixelTransformView.Smooth.valueToName
-                    (imageInfo.getSmooth(), "TC"));
+                    UI.getCurrent().getLocale()) + ": " +
+                    PixelTransformView.Smooth.valueToName
+                            (imageInfo.getSmooth(), "TC"));
             edgeCrispening.setText(translator.getTranslation("Edge-crispening"
                     , UI.getCurrent().getLocale()) + ": " +
                     PixelTransformView.EdgeCrispening.valueToName
                             (imageInfo.getEdgeCrispening(), "TC"));
         } else {
             smooth.setText(translator.getTranslation("Smooth",
-                    UI.getCurrent().getLocale()) + ": " + PixelTransformView.Smooth.valueToName
-                    (imageInfo.getSmooth(), "EN"));
+                    UI.getCurrent().getLocale()) + ": " +
+                    PixelTransformView.Smooth.valueToName
+                            (imageInfo.getSmooth(), "EN"));
             edgeCrispening.setText(translator.getTranslation("Edge-crispening"
                     , UI.getCurrent().getLocale()) + ": " +
                     PixelTransformView.EdgeCrispening.valueToName
                             (imageInfo.getEdgeCrispening(), "EN"));
         }
         saturation.setText(translator.getTranslation("Saturation",
-                UI.getCurrent().getLocale()) + ": " + imageInfo.getSaturation());
+                UI.getCurrent().getLocale()) + ": " +
+                imageInfo.getSaturation());
         contrastRatio.setText(translator.getTranslation("Contras-ratio",
-                UI.getCurrent().getLocale()) + ": " + imageInfo.getContrastRatio());
+                UI.getCurrent().getLocale()) + ": " +
+                imageInfo.getContrastRatio());
         parameterDetails.setSummaryText(translator.getTranslation("Image" +
                 "-transform-parameter", UI.getCurrent().getLocale()));
         downloadOriginal.removeAll();

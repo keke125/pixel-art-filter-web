@@ -31,9 +31,8 @@ public class LoginView extends LoginOverlay implements BeforeEnterObserver {
         this.authenticatedUser = authenticatedUser;
         LoginI18n.Header headerTC = new LoginI18n.Header();
         LoginI18n.Header headerEN = new LoginI18n.Header();
-        setAction(RouteUtil.getRoutePath(VaadinService.getCurrent().getContext(),
-                getClass()));
-
+        setAction(RouteUtil.getRoutePath(VaadinService.getCurrent()
+                .getContext(), getClass()));
         // i18n Traditional Chinese
         LoginI18n i18nTC = LoginI18n.createDefault();
         i18nTC.setHeader(headerTC);
@@ -76,7 +75,8 @@ public class LoginView extends LoginOverlay implements BeforeEnterObserver {
         setForgotPasswordButtonVisible(true);
         setOpened(true);
         // redirect to signup
-        addForgotPasswordListener(e -> UI.getCurrent().navigate(SignupView.class));
+        addForgotPasswordListener(e ->
+                UI.getCurrent().navigate(SignupView.class));
     }
 
     @Override

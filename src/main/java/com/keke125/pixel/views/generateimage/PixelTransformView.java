@@ -187,7 +187,8 @@ public class PixelTransformView extends Div implements LocaleChangeObserver,
                         this.user = maybeUser.get();
                         // check if file size achieve file size limit
                         if ((this.user.getImageSize() + (double)
-                                (entry.getValue().length() / 1024 / 1024)) < this.user.getImageSizeLimit()) {
+                                (entry.getValue().length() / 1024 / 1024)) <
+                                this.user.getImageSizeLimit()) {
                             newImageInfo = new ImageInfo("Pixel Transform",
                                     colorNumber.getValue(),
                                     pixelSize.getValue(),
@@ -203,22 +204,26 @@ public class PixelTransformView extends Div implements LocaleChangeObserver,
                                 binderImage.writeBean(newImageInfo);
                                 this.imageInfoService.update(newImageInfo);
                                 this.user.setImageSize(this.user.getImageSize() +
-                                        (double) entry.getValue().length() / 1024 / 1024);
-                                imageFileSize += (double) entry.getValue().length() / 1024 / 1024;
+                                        (double) entry.getValue().length()
+                                                / 1024 / 1024);
+                                imageFileSize += (double) entry.getValue().
+                                        length() / 1024 / 1024;
                                 try {
                                     binderUser.writeBean(this.user);
                                     this.userService.update(this.user);
                                 } catch (ValidationException ex) {
-                                    throw new RuntimeException(ex);
+                                    System.err.println(ex.getMessage());
                                 }
                             } catch (ValidationException ex) {
-                                throw new RuntimeException(ex);
+                                System.err.println(ex.getMessage());
                             }
                         } else {
-                            Notification.show(String.format(translator.getTranslation
-                                            ("reached-images-size-limit",
+                            Notification.show(String.format
+                                    (translator.getTranslation("reached" +
+                                                            "-images-size"
+                                                            + "-limit",
                                                     UI.getCurrent().getLocale()),
-                                    entry.getKey()));
+                                            entry.getKey()));
                             multiFileUpload.clearFileList();
                             break;
                         }
@@ -229,8 +234,8 @@ public class PixelTransformView extends Div implements LocaleChangeObserver,
                         imageFileMap.size(), imageFileSize));
                 imageFileMap.clear();
             } else {
-                Notification.show(translator.getTranslation("empty-duplicate" +
-                        "-upload-failed", UI.getCurrent().getLocale()));
+                Notification.show(translator.getTranslation("empty-duplicate"
+                        + "-upload-failed", UI.getCurrent().getLocale()));
             }
             isSaved = true;
             clearForm();
@@ -267,8 +272,8 @@ public class PixelTransformView extends Div implements LocaleChangeObserver,
                 UI.getCurrent().getLocale()));
         pixelSize.setItems(1, 2, 3, 4, 5);
         pixelSize.setValue(2);
-        pixelSize.setTooltipText(translator.getTranslation("pixelSize-tooltip"
-                , UI.getCurrent().getLocale()));
+        pixelSize.setTooltipText(translator.getTranslation
+                ("pixelSize-tooltip", UI.getCurrent().getLocale()));
         smooth.setLabel(translator.getTranslation("Smooth",
                 UI.getCurrent().getLocale()));
         smooth.setTooltipText(translator.getTranslation("smooth-tooltip",
@@ -304,8 +309,8 @@ public class PixelTransformView extends Div implements LocaleChangeObserver,
         contrastRatio.setItems(-250, -200, -150, -100, -50, 0, 50, 100, 150,
                 200, 250);
         contrastRatio.setValue(0);
-        contrastRatio.setTooltipText(translator.getTranslation("contrastRatio" +
-                "-tooltip", UI.getCurrent().getLocale()));
+        contrastRatio.setTooltipText(translator.getTranslation
+                ("contrastRatio" + "-tooltip", UI.getCurrent().getLocale()));
         formLayout.add(colorNumber, pixelSize, smooth, edgeCrispening,
                 saturation, contrastRatio);
         return formLayout;
@@ -375,7 +380,8 @@ public class PixelTransformView extends Div implements LocaleChangeObserver,
                             }
                             return;
                         }
-                        if ((this.user.getImageSize() + (double) savedFileData.getFile().length()
+                        if ((this.user.getImageSize() + (double)
+                                savedFileData.getFile().length()
                                 / 1024 / 1024) < this.user.getImageSizeLimit()) {
                             System.out.printf("Tmp File saved to: %s.\n",
                                     absolutePath);
@@ -389,7 +395,8 @@ public class PixelTransformView extends Div implements LocaleChangeObserver,
                             Notification notification =
                                     Notification.show(errorMessage, 5000,
                                             Notification.Position.BOTTOM_CENTER);
-                            notification.addThemeVariants(NotificationVariant.LUMO_ERROR);
+                            notification.addThemeVariants
+                                    (NotificationVariant.LUMO_ERROR);
                             if (savedFileData.getFile().delete()) {
                                 System.out.printf("Tmp File has been deleted " +
                                         "from %s.\n", absolutePath);
@@ -447,8 +454,9 @@ public class PixelTransformView extends Div implements LocaleChangeObserver,
             Optional<User> maybeUser = authenticatedUser.get();
             maybeUser.ifPresent(value -> this.user = value);
             File imageDirectoryFile =
-                    new File(workingDirectoryPath.toAbsolutePath() + File.separator +
-                            "images" + File.separator + this.user.getId() + File.separator + "original");
+                    new File(workingDirectoryPath.toAbsolutePath() +
+                            File.separator + "images" + File.separator +
+                            this.user.getId() + File.separator + "original");
             String newFileName = instantNow + "-" + uploadFileName;
             // check if image folder exists
             if (!imageDirectoryFile.exists()) {
@@ -469,7 +477,8 @@ public class PixelTransformView extends Div implements LocaleChangeObserver,
                 }
             }
             // check image folder privilege
-            if (!(imageDirectoryFile.canRead() && imageDirectoryFile.canWrite())) {
+            if (!(imageDirectoryFile.canRead()
+                    && imageDirectoryFile.canWrite())) {
                 System.out.printf("Don't have privilege to write and read " +
                         "folder %s.\n", imageDirectoryFile.getAbsolutePath());
                 if (savedFileData.getFile().delete()) {
@@ -484,18 +493,21 @@ public class PixelTransformView extends Div implements LocaleChangeObserver,
             // if real file type is image
             // copy image from tmp folder to specific folder and rename image
             // name
-            if (savedFileData.getFile().exists() && savedFileData.getFile().canRead()) {
+            if (savedFileData.getFile().exists()
+                    && savedFileData.getFile().canRead()) {
                 String newFileNameHashed = DigestUtils.sha256Hex(newFileName);
                 newFileNameHashed = newFileNameHashed.substring(0, 8);
                 String newFileFullName =
-                        newFileNameHashed + "." + FilenameUtils.getExtension(uploadFileName);
+                        newFileNameHashed + "." +
+                                FilenameUtils.getExtension(uploadFileName);
                 try {
                     Files.copy(savedFileData.getFile().toPath(),
                             imageDirectoryFile.toPath().resolve(newFileFullName),
                             StandardCopyOption.REPLACE_EXISTING);
                     if (!imageFileMap.containsKey(uploadFileName)) {
                         imageFileMap.put(uploadFileName,
-                                imageDirectoryFile.toPath().resolve(newFileFullName).toFile());
+                                imageDirectoryFile.toPath().resolve
+                                        (newFileFullName).toFile());
                     } else {
                         String errorMessage =
                                 String.format(translator.getTranslation("same" +
@@ -507,14 +519,17 @@ public class PixelTransformView extends Div implements LocaleChangeObserver,
                                 Notification.show(errorMessage, 5000,
                                         Notification.Position.BOTTOM_CENTER);
                         notification.addThemeVariants(NotificationVariant.LUMO_ERROR);
-                        if (imageDirectoryFile.toPath().resolve(newFileFullName).toFile().delete()) {
+                        if (imageDirectoryFile.toPath().resolve(newFileFullName)
+                                .toFile().delete()) {
                             System.out.printf("Removed duplicate file from %s" +
-                                            ".\n",
-                                    imageDirectoryFile.toPath().resolve(newFileFullName).toAbsolutePath());
+                                    ".\n", imageDirectoryFile.toPath().
+                                    resolve(newFileFullName).toAbsolutePath());
                         } else {
                             System.err.printf("Failed to remove duplicate " +
                                             "file from %s.\n",
-                                    imageDirectoryFile.toPath().resolve(newFileFullName).toAbsolutePath());
+                                    imageDirectoryFile.toPath().
+                                            resolve(newFileFullName).
+                                            toAbsolutePath());
                         }
                         return;
                     }
@@ -522,7 +537,8 @@ public class PixelTransformView extends Div implements LocaleChangeObserver,
                     throw new RuntimeException(e);
                 }
                 System.out.printf("Saved New file %s from %s.\n",
-                        imageDirectoryFile.toPath().resolve(newFileFullName).toAbsolutePath(),
+                        imageDirectoryFile.toPath().resolve(newFileFullName).
+                                toAbsolutePath(),
                         savedFileData.getFile().toPath().toAbsolutePath());
                 if (savedFileData.getFile().delete()) {
                     System.out.printf("Removed tmp file from %s.\n",
@@ -541,10 +557,11 @@ public class PixelTransformView extends Div implements LocaleChangeObserver,
                     File removedFile = imageFileMap.get(removedFileName);
                     if (removedFile != null) {
                         if (removedFile.delete()) {
-                            System.out.println("Removed file " + removedFileName + " " +
-                                    "by user");
+                            System.out.println("Removed file " +
+                                    removedFileName + " " + "by user");
                         } else {
-                            System.err.println("Failed to remove file " + removedFileName + " by user");
+                            System.err.println("Failed to remove file " +
+                                    removedFileName + " by user");
                         }
                         imageFileMap.remove(removedFileName);
                     }
@@ -552,8 +569,9 @@ public class PixelTransformView extends Div implements LocaleChangeObserver,
         // upload non image file (by file extension)
         multiFileUpload.addFileRejectedListener(event -> {
             String errorMessage = event.getErrorMessage();
-            Notification notification = Notification.show(errorMessage, 5000,
-                    Notification.Position.BOTTOM_CENTER);
+            Notification notification = Notification.show
+                    (errorMessage, 5000,
+                            Notification.Position.BOTTOM_CENTER);
             notification.addThemeVariants(NotificationVariant.LUMO_ERROR);
         });
         uploadLayout.add(multiFileUpload);
@@ -564,44 +582,60 @@ public class PixelTransformView extends Div implements LocaleChangeObserver,
     public void localeChange(LocaleChangeEvent localeChangeEvent) {
         save.setText(translator.getTranslation("save",
                 UI.getCurrent().getLocale()));
-        setParameterTitle.setText(translator.getTranslation("Set-up-transform" +
-                "-parameter", UI.getCurrent().getLocale()));
-        uploadImageTitle.setText(translator.getTranslation("upload-image" +
-                "-title", UI.getCurrent().getLocale()));
-        confirmDialog.setText(translator.getTranslation("Unsaved-changes",
-                UI.getCurrent().getLocale()));
-        confirmDialog.setCancelText(translator.getTranslation("cancel",
-                UI.getCurrent().getLocale()));
-        confirmDialog.setConfirmText(translator.getTranslation("save",
-                UI.getCurrent().getLocale()));
-        confirmDialog.setRejectText(translator.getTranslation("discard",
-                UI.getCurrent().getLocale()));
-        colorNumber.setLabel(translator.getTranslation("Color-number",
-                UI.getCurrent().getLocale()));
-        colorNumber.setTooltipText(translator.getTranslation("colorNumber" +
-                "-tooltip", UI.getCurrent().getLocale()));
+        setParameterTitle.setText(translator.getTranslation
+                ("Set-up-transform" +
+                        "-parameter", UI.getCurrent().getLocale()));
+        uploadImageTitle.setText(translator.getTranslation
+                ("upload-image" +
+                        "-title", UI.getCurrent().getLocale()));
+        confirmDialog.setText(translator.getTranslation
+                ("Unsaved-changes",
+                        UI.getCurrent().getLocale()));
+        confirmDialog.setCancelText(translator.getTranslation
+                ("cancel",
+                        UI.getCurrent().getLocale()));
+        confirmDialog.setConfirmText(translator.getTranslation
+                ("save",
+                        UI.getCurrent().getLocale()));
+        confirmDialog.setRejectText(translator.getTranslation
+                ("discard",
+                        UI.getCurrent().getLocale()));
+        colorNumber.setLabel(translator.getTranslation
+                ("Color-number",
+                        UI.getCurrent().getLocale()));
+        colorNumber.setTooltipText(translator.getTranslation
+                ("colorNumber" +
+                        "-tooltip", UI.getCurrent().getLocale()));
         pixelSize.setLabel(translator.getTranslation("Pixel-size",
                 UI.getCurrent().getLocale()));
-        pixelSize.setTooltipText(translator.getTranslation("pixelSize-tooltip"
-                , UI.getCurrent().getLocale()));
+        pixelSize.setTooltipText(translator.getTranslation
+                ("pixelSize-tooltip"
+                        , UI.getCurrent().getLocale()));
         smooth.setLabel(translator.getTranslation("Smooth",
                 UI.getCurrent().getLocale()));
-        smooth.setTooltipText(translator.getTranslation("smooth-tooltip",
-                UI.getCurrent().getLocale()));
-        edgeCrispening.setLabel(translator.getTranslation("Edge-crispening",
-                UI.getCurrent().getLocale()));
+        smooth.setTooltipText(translator.getTranslation
+                ("smooth-tooltip",
+                        UI.getCurrent().getLocale()));
+        edgeCrispening.setLabel(translator.getTranslation
+                ("Edge-crispening",
+                        UI.getCurrent().getLocale()));
         edgeCrispening.setTooltipText(translator.getTranslation(
                 "edgeCrispening-tooltip", UI.getCurrent().getLocale()));
-        saturation.setLabel(translator.getTranslation("Saturation",
-                UI.getCurrent().getLocale()));
-        saturation.setTooltipText(translator.getTranslation("saturation" +
-                "-tooltip", UI.getCurrent().getLocale()));
-        contrastRatio.setLabel(translator.getTranslation("Contras-ratio",
-                UI.getCurrent().getLocale()));
-        contrastRatio.setTooltipText(translator.getTranslation("contrastRatio" +
-                "-tooltip", UI.getCurrent().getLocale()));
-        hint.setText(String.format(translator.getTranslation("upload-multiple" +
-                        "-hint", UI.getCurrent().getLocale()),
+        saturation.setLabel(translator.getTranslation
+                ("Saturation",
+                        UI.getCurrent().getLocale()));
+        saturation.setTooltipText(translator.getTranslation
+                ("saturation" +
+                        "-tooltip", UI.getCurrent().getLocale()));
+        contrastRatio.setLabel(translator.getTranslation
+                ("Contras-ratio",
+                        UI.getCurrent().getLocale()));
+        contrastRatio.setTooltipText(translator.getTranslation
+                ("contrastRatio" +
+                        "-tooltip", UI.getCurrent().getLocale()));
+        hint.setText(String.format(translator.getTranslation
+                        ("upload-multiple" +
+                                "-hint", UI.getCurrent().getLocale()),
                 appConfig.getMaxImageSizeInMegaBytes(),
                 appConfig.getMaxImageFiles()));
         dropLabel.setText(translator.getTranslation("upload-notification",
@@ -680,8 +714,10 @@ public class PixelTransformView extends Div implements LocaleChangeObserver,
                         if (maybeUser.isPresent()) {
                             this.user = maybeUser.get();
                             // check if file size achieve file size limit
-                            if ((this.user.getImageSize() + (double) (entry.getValue().length()
-                                    / 1024 / 1024)) < this.user.getImageSizeLimit()) {
+                            if ((this.user.getImageSize() +
+                                    (double) (entry.getValue().length()
+                                            / 1024 / 1024)) <
+                                    this.user.getImageSizeLimit()) {
                                 newImageInfo = new ImageInfo("Pixel " +
                                         "Transform", colorNumber.getValue(),
                                         pixelSize.getValue(),
@@ -699,22 +735,26 @@ public class PixelTransformView extends Div implements LocaleChangeObserver,
                                     binderImage.writeBean(newImageInfo);
                                     this.imageInfoService.update(newImageInfo);
                                     this.user.setImageSize(this.user.getImageSize() +
-                                            (double) entry.getValue().length() / 1024 / 1024);
-                                    imageFileSize += (double) entry.getValue().length() / 1024 / 1024;
+                                            (double) entry.getValue().length()
+                                                    / 1024 / 1024);
+                                    imageFileSize += (double) entry.
+                                            getValue().length() / 1024 / 1024;
                                     try {
                                         binderUser.writeBean(this.user);
                                         this.userService.update(this.user);
                                     } catch (ValidationException ex) {
-                                        throw new RuntimeException(ex);
+                                        System.err.println(ex.getMessage());
                                     }
                                 } catch (ValidationException ex) {
-                                    throw new RuntimeException(ex);
+                                    System.err.println(ex.getMessage());
                                 }
                             } else {
-                                Notification.show(String.format(translator.getTranslation
-                                                ("reached-images-size-limit",
-                                                        UI.getCurrent().getLocale()),
-                                        entry.getKey()));
+                                Notification.show(String.format
+                                        (translator.getTranslation
+                                                        ("reached-images-size" +
+                                                                        "-limit",
+                                                                UI.getCurrent().getLocale()),
+                                                entry.getKey()));
                                 multiFileUpload.clearFileList();
                                 break;
                             }

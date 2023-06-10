@@ -63,7 +63,8 @@ public class ImageService {
 
     public void deleteAllImageInfoByUser(User user) {
         List<ImageInfo> imageInfoList =
-                imageInfoService.getRepository().findAllByOwnerName(user.getUsername());
+                imageInfoService.getRepository().findAllByOwnerName
+                        (user.getUsername());
         user.setImageSize(0.0);
         user.setImageSizeLimit(0.0);
         userService.update(user);
@@ -93,13 +94,17 @@ public class ImageService {
         // get current directory
         Path workingDirectoryPath = Util.getRootPath();
         File originalImageDirectoryFile =
-                new File(workingDirectoryPath.toAbsolutePath() + File.separator + "images" + File.separator + user.getId() + File.separator + "original");
+                new File(workingDirectoryPath.toAbsolutePath() +
+                        File.separator + "images" + File.separator +
+                        user.getId() + File.separator + "original");
         String newFileName = instantNow + "-" + entity.getUploadImageName();
         String newFileNameHashed = DigestUtils.sha256Hex(newFileName);
         newFileNameHashed = newFileNameHashed.substring(0, 8);
         // PixelTransform
         File generatedImageDirectoryFile =
-                new File(workingDirectoryPath.toAbsolutePath() + File.separator + "images" + File.separator + user.getId() + File.separator + "generated");
+                new File(workingDirectoryPath.toAbsolutePath() +
+                        File.separator + "images" + File.separator +
+                        user.getId() + File.separator + "generated");
         Tika tika = new Tika();
         String mimeType;
         mimeType = tika.detect(entity.getImageOriginalFile());
@@ -107,16 +112,20 @@ public class ImageService {
         String newFileFullName;
         if (acceptedImageFormat.contains(mimeType)) {
             newFileFullName =
-                    newFileNameHashed + "." + FilenameUtils.getExtension(entity.getImageOriginalName());
+                    newFileNameHashed + "." + FilenameUtils.getExtension
+                            (entity.getImageOriginalName());
         } else {
             newFileFullName = newFileNameHashed + "." + "jpg";
         }
-        if (generatedImageDirectoryFile.mkdirs() || generatedImageDirectoryFile.exists()) {
+        if (generatedImageDirectoryFile.mkdirs() ||
+                generatedImageDirectoryFile.exists()) {
             newFile =
-                    new File(generatedImageDirectoryFile.toPath().resolve(newFileFullName).toAbsolutePath().toString());
+                    new File(generatedImageDirectoryFile.toPath().resolve
+                            (newFileFullName).toAbsolutePath().toString());
         } else {
             newFile =
-                    new File(originalImageDirectoryFile.toPath().resolve(newFileFullName).toAbsolutePath().toString());
+                    new File(originalImageDirectoryFile.toPath().resolve
+                            (newFileFullName).toAbsolutePath().toString());
         }
         Mat imgMat = Imgcodecs.imread(entity.getImageOriginalFile());
         PixelTransform.saveImg(PixelTransform.transform(imgMat,

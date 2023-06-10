@@ -20,7 +20,11 @@ import com.vaadin.flow.component.textfield.TextField;
 import com.vaadin.flow.component.upload.Upload;
 import com.vaadin.flow.component.upload.UploadI18N;
 import com.vaadin.flow.component.upload.receivers.MemoryBuffer;
-import com.vaadin.flow.data.binder.*;
+import com.vaadin.flow.data.binder.BeanValidationBinder;
+import com.vaadin.flow.data.binder.Result;
+import com.vaadin.flow.data.binder.ValidationException;
+import com.vaadin.flow.data.binder.ValidationResult;
+import com.vaadin.flow.data.binder.ValueContext;
 import com.vaadin.flow.data.converter.Converter;
 import com.vaadin.flow.data.validator.EmailValidator;
 import com.vaadin.flow.dom.DomEventListener;
@@ -130,7 +134,7 @@ public class SignupView extends VerticalLayout {
                         newUser.setAvatarImage(savedInputStream.readAllBytes());
                         newUser.setAvatarImageName(uploadFileName);
                     } catch (IOException e) {
-                        throw new RuntimeException(e);
+                        System.err.println(e.getMessage());
                     }
                     System.out.printf("User Avatar %s image saved.%n",
                             usernameField.getValue());
@@ -143,11 +147,12 @@ public class SignupView extends VerticalLayout {
                     Notification notification =
                             Notification.show(errorMessage, 5000,
                                     Notification.Position.BOTTOM_CENTER);
-                    notification.addThemeVariants(NotificationVariant.LUMO_ERROR);
+                    notification.addThemeVariants
+                            (NotificationVariant.LUMO_ERROR);
                     try {
                         savedInputStream.close();
                     } catch (IOException e) {
-                        throw new RuntimeException(e);
+                        System.err.println(e.getMessage());
                     }
                 }
             } else {
@@ -162,7 +167,7 @@ public class SignupView extends VerticalLayout {
                 try {
                     savedInputStream.close();
                 } catch (IOException e) {
-                    throw new RuntimeException(e);
+                    System.err.println(e.getMessage());
                 }
             }
         });
@@ -279,7 +284,7 @@ public class SignupView extends VerticalLayout {
         // Another custom validator, this time for passwords
         binder.forField(passwordField1).asRequired().withValidator
                 (this::passwordValidator).withConverter(
-                new passwordConverter()).bind("hashedPassword");
+                new PasswordConverter()).bind("hashedPassword");
         // We won't bind passwordField2 to the Binder, because it will have
         // the same
         // value as the first field when correctly filled in. We just use it for
@@ -471,7 +476,7 @@ public class SignupView extends VerticalLayout {
         }
     }
 
-    public static class passwordConverter implements Converter<String, String> {
+    public static class PasswordConverter implements Converter<String, String> {
 
         @Override
         public Result<String> convertToModel(String fieldValue,
