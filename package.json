@@ -68,7 +68,7 @@
     "@vaadin/vaadin-development-mode-detector": "2.0.6",
     "@vaadin/vaadin-lumo-styles": "24.0.3",
     "@vaadin/vaadin-material-styles": "24.0.3",
-    "@vaadin/vaadin-themable-mixin": "24.0.3",
+    "@vaadin/vaadin-themable-mixin": "24.1.0",
     "@vaadin/vaadin-usage-statistics": "2.1.2",
     "@vaadin/vertical-layout": "24.0.3",
     "@vaadin/virtual-list": "24.0.3",
