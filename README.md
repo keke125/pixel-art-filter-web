@@ -3,6 +3,7 @@
 [![Build Docker](https://github.com/keke125/pixel-art-filter-web/actions/workflows/maven-docker.yml/badge.svg)](https://github.com/keke125/pixel-art-filter-web/actions/workflows/maven-docker.yml)
 [![Codacy Badge](https://app.codacy.com/project/badge/Grade/72d781f4fe5a4583887c2d9f31399e12)](https://app.codacy.com/gh/keke125/pixel-art-filter-web/dashboard?utm_source=gh&utm_medium=referral&utm_content=&utm_campaign=Badge_grade)
 ![Snyk Vulnerabilities for GitHub Repo](https://img.shields.io/snyk/vulnerabilities/github/keke125/pixel-art-filter-web)
+[![FOSSA Status](https://app.fossa.com/api/projects/git%2Bgithub.com%2Fkeke125%2Fpixel-art-filter-web.svg?type=shield)](https://app.fossa.com/projects/git%2Bgithub.com%2Fkeke125%2Fpixel-art-filter-web?ref=badge_shield)
 
 [![GitHub release](https://img.shields.io/github/release/keke125/pixel-art-filter-web.svg)](https://github.com/keke125/pixel-art-filter-web/releases/latest)
 ![GitHub language count](https://img.shields.io/github/languages/count/keke125/pixel-art-filter-web)
@@ -415,3 +416,7 @@ java -Djava.library.path=/path/to/.so -jar /path/to/.jar
 ## 授權條款
 
 [![Licence](https://img.shields.io/github/license/keke125/pixel-art-filter-web?style=for-the-badge)](LICENSE)
+
+
+## License
+[![FOSSA Status](https://app.fossa.com/api/projects/git%2Bgithub.com%2Fkeke125%2Fpixel-art-filter-web.svg?type=large)](https://app.fossa.com/projects/git%2Bgithub.com%2Fkeke125%2Fpixel-art-filter-web?ref=badge_large)
