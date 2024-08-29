@@ -12,7 +12,6 @@ import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.DelegatingPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.crypto.password.Pbkdf2PasswordEncoder;
-import org.springframework.security.web.util.matcher.AntPathRequestMatcher;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -63,8 +62,10 @@ public class SecurityConfiguration extends VaadinWebSecurity {
         // AntPathRequestMatcher("/images/*.png")).permitAll();
 
         // Icons from the line-awesome addon
-        http.authorizeHttpRequests().requestMatchers
-                (new AntPathRequestMatcher("/line-awesome/**/*.svg")).permitAll();
+        http.authorizeHttpRequests(auth -> auth
+                .requestMatchers("/line-awesome/**/*.svg").permitAll()
+                .anyRequest().authenticated()
+        );
         super.configure(http);
         setLoginView(http, LoginView.class);
     }
