@@ -12,6 +12,7 @@ import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.DelegatingPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.crypto.password.Pbkdf2PasswordEncoder;
+import org.springframework.security.web.util.matcher.AntPathRequestMatcher;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -33,8 +34,7 @@ public class SecurityConfiguration extends VaadinWebSecurity {
         // byte
         int pbkdf2SaltLength = 16;
         int pbkdf2Iterations = 310000;
-        Pbkdf2PasswordEncoder.SecretKeyFactoryAlgorithm secretKeyFactoryAlgorithm =
-                Pbkdf2PasswordEncoder.SecretKeyFactoryAlgorithm.PBKDF2WithHmacSHA256;
+        Pbkdf2PasswordEncoder.SecretKeyFactoryAlgorithm secretKeyFactoryAlgorithm = Pbkdf2PasswordEncoder.SecretKeyFactoryAlgorithm.PBKDF2WithHmacSHA256;
         // argon2
         int argon2SaltLength = 16;
         int hashLength = 32;
@@ -43,16 +43,11 @@ public class SecurityConfiguration extends VaadinWebSecurity {
         int argon2Iterations = 2;
         Map<String, PasswordEncoder> encoders = new HashMap<>();
         encoders.put("BCrypt", new BCryptPasswordEncoder());
-        encoders.put("pbkdf2", new Pbkdf2PasswordEncoder(secret,
-                pbkdf2SaltLength, pbkdf2Iterations, secretKeyFactoryAlgorithm));
-        encoders.put("pbkdf2@SpringSecurity_v5_8",
-                Pbkdf2PasswordEncoder.defaultsForSpringSecurity_v5_8());
-        encoders.put("argon2", new Argon2PasswordEncoder(argon2SaltLength,
-                hashLength, parallelism, memory, argon2Iterations));
-        encoders.put("argon2@SpringSecurity_v5_8",
-                Argon2PasswordEncoder.defaultsForSpringSecurity_v5_8());
-        return new DelegatingPasswordEncoder(appConfig.getIdForEncode(),
-                encoders);
+        encoders.put("pbkdf2", new Pbkdf2PasswordEncoder(secret, pbkdf2SaltLength, pbkdf2Iterations, secretKeyFactoryAlgorithm));
+        encoders.put("pbkdf2@SpringSecurity_v5_8", Pbkdf2PasswordEncoder.defaultsForSpringSecurity_v5_8());
+        encoders.put("argon2", new Argon2PasswordEncoder(argon2SaltLength, hashLength, parallelism, memory, argon2Iterations));
+        encoders.put("argon2@SpringSecurity_v5_8", Argon2PasswordEncoder.defaultsForSpringSecurity_v5_8());
+        return new DelegatingPasswordEncoder(appConfig.getIdForEncode(), encoders);
     }
 
     @Override
@@ -62,10 +57,7 @@ public class SecurityConfiguration extends VaadinWebSecurity {
         // AntPathRequestMatcher("/images/*.png")).permitAll();
 
         // Icons from the line-awesome addon
-        http.authorizeHttpRequests(auth -> auth
-                .requestMatchers("/line-awesome/**/*.svg").permitAll()
-                .anyRequest().authenticated()
-        );
+        http.authorizeHttpRequests(auth -> auth.requestMatchers(new AntPathRequestMatcher("/line-awesome/**/*.svg")).permitAll());
         super.configure(http);
         setLoginView(http, LoginView.class);
     }
