@@ -10,7 +10,7 @@ import com.vaadin.flow.component.HasComponents;
 import com.vaadin.flow.component.HasStyle;
 import com.vaadin.flow.component.UI;
 import com.vaadin.flow.component.html.H3;
-import com.vaadin.flow.component.html.Label;
+import com.vaadin.flow.component.html.NativeLabel;
 import com.vaadin.flow.component.html.Main;
 import com.vaadin.flow.component.html.OrderedList;
 import com.vaadin.flow.component.orderedlayout.HorizontalLayout;
@@ -49,9 +49,9 @@ public class GalleryView extends Main implements HasComponents, HasStyle,
 
     private H3 header;
 
-    private Label imageSize;
+    private NativeLabel imageSize;
 
-    private Label imageSizeLimit;
+    private NativeLabel imageSizeLimit;
 
     public GalleryView(ImageService imageService,
                        AuthenticatedUser authenticatedUser) {
@@ -85,10 +85,10 @@ public class GalleryView extends Main implements HasComponents, HasStyle,
                 FontSize.XXXLARGE);
         headerContainer.add(header);
 
-        imageSize = new Label(translator.getTranslation("Image-size",
+        imageSize = new NativeLabel(translator.getTranslation("Image-size",
                 UI.getCurrent().getLocale()) + ": " + String.format("%sMB",
                 Math.round(user.getImageSize())));
-        imageSizeLimit = new Label(translator.getTranslation("Image-size" +
+        imageSizeLimit = new NativeLabel(translator.getTranslation("Image-size" +
                 "-limit", UI.getCurrent().getLocale()) + ": " + String.format
                 ("%sMB", Math.round(user.getImageSizeLimit())));
 
