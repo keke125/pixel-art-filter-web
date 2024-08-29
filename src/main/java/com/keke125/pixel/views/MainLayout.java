@@ -1,7 +1,5 @@
 package com.keke125.pixel.views;
 
-import com.keke125.pixel.components.appnav.AppNav;
-import com.keke125.pixel.components.appnav.AppNavItem;
 import com.keke125.pixel.data.entity.User;
 import com.keke125.pixel.security.AuthenticatedUser;
 import com.keke125.pixel.views.about.AboutView;
@@ -27,6 +25,8 @@ import com.vaadin.flow.component.icon.VaadinIcon;
 import com.vaadin.flow.component.menubar.MenuBar;
 import com.vaadin.flow.component.orderedlayout.Scroller;
 import com.vaadin.flow.component.select.Select;
+import com.vaadin.flow.component.sidenav.SideNav;
+import com.vaadin.flow.component.sidenav.SideNavItem;
 import com.vaadin.flow.dom.ThemeList;
 import com.vaadin.flow.i18n.LocaleChangeEvent;
 import com.vaadin.flow.i18n.LocaleChangeObserver;
@@ -60,15 +60,15 @@ public class MainLayout extends AppLayout implements LocaleChangeObserver {
     private final Select<Locale> selectLanguage = new Select<>();
 
     // Navigation
-    private AppNavItem galleryViewNav;
+    private SideNavItem galleryViewNav;
 
-    private AppNavItem pixelTransformViewNav;
+    private SideNavItem pixelTransformViewNav;
 
-    private AppNavItem aboutViewNav;
+    private SideNavItem aboutViewNav;
 
-    private AppNavItem userProfileViewNav;
+    private SideNavItem userProfileViewNav;
 
-    private AppNavItem userManagementViewNav;
+    private SideNavItem userManagementViewNav;
 
     private final Anchor loginLink = new Anchor();
 
@@ -127,23 +127,23 @@ public class MainLayout extends AppLayout implements LocaleChangeObserver {
         addToDrawer(header, scroller, createFooter());
     }
 
-    private AppNav createNavigation() {
+    private SideNav createNavigation() {
         // AppNav is not yet an official component.
         // For documentation, visit https://github.com/vaadin/vcf-nav#readme
-        AppNav nav = new AppNav();
-        galleryViewNav = new AppNavItem(translator.getTranslation
+        SideNav nav = new SideNav();
+        galleryViewNav = new SideNavItem(translator.getTranslation
                 ("gallery", UI.getCurrent().getLocale()), GalleryView.class,
                 LineAwesomeIcon.IMAGES.create());
-        pixelTransformViewNav = new AppNavItem(translator.getTranslation
+        pixelTransformViewNav = new SideNavItem(translator.getTranslation
                 ("pixel-transform", UI.getCurrent().getLocale()),
                 PixelTransformView.class, LineAwesomeIcon.IMAGE.create());
-        aboutViewNav = new AppNavItem(translator.getTranslation
+        aboutViewNav = new SideNavItem(translator.getTranslation
                 ("about", UI.getCurrent().getLocale()), AboutView.class,
                 LineAwesomeIcon.FILE.create());
-        userManagementViewNav = new AppNavItem(translator.getTranslation
+        userManagementViewNav = new SideNavItem(translator.getTranslation
                 ("user-management", UI.getCurrent().getLocale()),
                 UserManagementView.class, LineAwesomeIcon.USERS_SOLID.create());
-        userProfileViewNav = new AppNavItem(translator.getTranslation
+        userProfileViewNav = new SideNavItem(translator.getTranslation
                 ("user-profile", UI.getCurrent().getLocale()),
                 UserProfileView.class, LineAwesomeIcon.USER.create());
         if (accessChecker.hasAccess(GalleryView.class)) {
