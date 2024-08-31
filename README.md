@@ -41,6 +41,19 @@ Demo 伺服器託管於 OVH 俄勒岡機房，使用 Cloudflare CDN 加速。
 ## 授權條款
 [![Licence](https://img.shields.io/github/license/keke125/pixel-art-filter-web?style=for-the-badge)](LICENSE)
 
+## 程式截圖
+![檢視儲存圖片](img/img.png)
+檢視儲存圖片
+
+![檢視圖片資訊](img/img_1.png)
+檢視圖片資訊
+
+![設定圖片轉換參數](img/img_2.png)
+設定圖片轉換參數
+
+![使用者管理](img/img_3.png)
+使用者管理
+
 ## 組建
 
 本專案為`Maven`專案，請參考以下指令組建。
