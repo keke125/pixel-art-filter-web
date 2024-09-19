@@ -83,7 +83,7 @@ jobs:
         name: Download digests
         uses: actions/download-artifact@v4.1.7
         with:
-          name: digests
+          name: digests-${{ runner.arch }}
           path: /tmp/digests
       -
         name: Set up Docker Buildx
