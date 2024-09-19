@@ -83,7 +83,6 @@ jobs:
         name: Download digests
         uses: actions/download-artifact@v4.1.7
         with:
-          name: digests
           path: /tmp/digests
       -
         name: Set up Docker Buildx
