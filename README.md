@@ -353,3 +353,5 @@ server {
   } 
 }
 ```
+## 程式碼行數
+![image](https://github.com/user-attachments/assets/0de3de5e-2ca2-4ae9-be91-0893cb9c871b)
